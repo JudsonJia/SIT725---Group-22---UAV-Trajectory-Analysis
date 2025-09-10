@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - UAV Analysis Platform</title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="blue-grey lighten-5">
+<div class="container">
+    <div class="row">
+        <div class="col s12 m8 offset-m2">
+            <div class="card" style="margin-top: 30px; border-radius: 8px;">
+                <div class="card-content">
+                        <span class="card-title center-align">
+                            <i class="material-icons large teal-text" style="font-size: 3rem;">person_add</i>
+                            <h4 style="margin-top: 0;">Create Account</h4>
+                        </span>
+
+                    <form id="register-form">
+                        <div class="row">
+                            <div class="input-field col s12 m6">
+                                <i class="material-icons prefix">person</i>
+                                <input id="firstName" type="text" class="validate" required>
+                                <label for="firstName">First Name</label>
+                            </div>
+                            <div class="input-field col s12 m6">
+                                <input id="lastName" type="text" class="validate" required>
+                                <label for="lastName">Last Name</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">account_circle</i>
+                                <input id="username" type="text" class="validate" required minlength="3">
+                                <label for="username">Username</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">email</i>
+                                <input id="email" type="email" class="validate" required>
+                                <label for="email">Email</label>
+                                <span class="helper-text" data-error="Please enter a valid email"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">lock</i>
+                                <input id="password" type="password" class="validate" required minlength="6">
+                                <label for="password">Password</label>
+                                <div class="password-strength" style="margin-top: 10px;">
+                                    <div class="progress">
+                                        <div class="determinate" style="width: 0%"></div>
+                                    </div>
+                                    <span class="grey-text text-darken-1" style="font-size: 12px;">Password strength</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">lock</i>
+                                <input id="confirmPassword" type="password" class="validate" required>
+                                <label for="confirmPassword">Confirm Password</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col s12">
+                                <button class="btn waves-effect waves-light teal btn-large" type="submit" style="width: 100%;">
+                                    Register
+                                    <i class="material-icons right">how_to_reg</i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        <div class="col s12 center-align">
+                            <p style="margin: 20px 0;">Already have an account? <a href="/login" class="teal-text">Login here</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="/js/auth.js"></script>
+</body>
+</html>

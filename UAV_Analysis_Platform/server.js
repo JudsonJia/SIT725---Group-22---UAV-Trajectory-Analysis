@@ -102,6 +102,34 @@ app.get('/js/scripts.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'js', 'scripts.js'));
 });
 
+
+// 在现有的路由部分添加：
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'register.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+    // 先检查认证
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    if (!token) {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
+});
+
+// Google OAuth 路由（占位符）
+app.get('/api/auth/google', (req, res) => {
+    res.json({ message: 'Google OAuth not implemented yet' });
+});
+
+app.get('/api/auth/google/callback', (req, res) => {
+    res.json({ message: 'Google OAuth callback not implemented yet' });
+});
+
 // 静态文件路由 - 支持多种路径结构
 app.use('/public/styles', express.static(path.join(__dirname, 'public', 'styles')));
 app.use('/public/css', express.static(path.join(__dirname, 'public', 'css')));

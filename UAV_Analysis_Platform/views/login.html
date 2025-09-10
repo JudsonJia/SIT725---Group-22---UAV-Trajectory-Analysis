@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - UAV Analysis Platform</title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="blue-grey lighten-5">
+<div class="container">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="card" style="margin-top: 50px; border-radius: 8px;">
+                <div class="card-content">
+                        <span class="card-title center-align">
+                            <i class="material-icons large teal-text" style="font-size: 3rem;">flight_takeoff</i>
+                            <h4 style="margin-top: 0;">UAV Analysis Platform</h4>
+                        </span>
+
+                    <form id="login-form">
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">email</i>
+                                <input id="email" type="email" class="validate" required>
+                                <label for="email">Email</label>
+                                <span class="helper-text" data-error="Please enter a valid email"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">lock</i>
+                                <input id="password" type="password" class="validate" required minlength="6">
+                                <label for="password">Password</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col s12">
+                                <label>
+                                    <input type="checkbox" id="remember-me" class="filled-in" />
+                                    <span>Remember me</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col s12">
+                                <button class="btn waves-effect waves-light teal btn-large" type="submit" style="width: 100%;">
+                                    Login
+                                    <i class="material-icons right">send</i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        <div class="col s12 center-align">
+                            <p style="margin: 20px 0;">Don't have an account? <a href="/register" class="teal-text">Register here</a></p>
+                            <div class="divider"></div>
+                            <a href="/api/auth/google" class="btn red waves-effect waves-light" style="margin-top: 20px;">
+                                <i class="material-icons left">account_circle</i>
+                                Login with Google
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="/js/auth.js"></script>
+</body>
+</html>

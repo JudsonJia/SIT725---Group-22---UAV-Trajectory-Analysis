@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flights - UAV Analysis Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="grey lighten-4">
+
+<!-- 顶部导航 -->
+<nav class="teal darken-2">
+    <div class="nav-wrapper container">
+        <a href="/dashboard" class="brand-logo">UAV Flights</a>
+        <ul class="right hide-on-med-and-down">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li class="active"><a href="/flights">Flights</a></li>
+            <li><a href="/analysis">Analysis</a></li>
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="javascript:void(0);" onclick="logout()">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="container">
+    <h4 class="center-align" style="margin-top: 30px;">Flight History</h4>
+
+    <!-- 搜索栏 -->
+    <div class="row">
+        <form id="searchForm" class="col s12 m10 offset-m1">
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="searchName" type="text" placeholder="Search by name">
+                </div>
+                <div class="input-field col s4">
+                    <input id="searchDate" type="date">
+                </div>
+                <div class="input-field col s2">
+                    <button class="btn waves-effect waves-light teal" type="submit">
+                        <i class="material-icons">search</i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 批量操作 -->
+    <div class="row">
+        <div class="col s12">
+            <button id="bulkDeleteBtn" class="btn red waves-effect waves-light">
+                <i class="material-icons left">delete</i>Delete Selected
+            </button>
+            <button id="bulkExportBtn" class="btn orange waves-effect waves-light">
+                <i class="material-icons left">download</i>Export CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- 航班表格 -->
+    <table class="highlight responsive-table">
+        <thead>
+        <tr>
+            <th><label><input type="checkbox" id="selectAll"><span></span></label></th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Points</th>
+            <th>Accuracy</th>
+            <th>Response Time</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="flightsTableBody"></tbody>
+    </table>
+
+    <!-- 分页 -->
+    <ul class="pagination center" id="pagination"></ul>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="/js/flights.js"></script>
+</body>
+</html>

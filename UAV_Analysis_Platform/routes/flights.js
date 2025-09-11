@@ -35,7 +35,10 @@ router.post('/compare', (req, res) => flightController.compareFlights(req, res))
 // 新增：获取性能趋势
 router.get('/performance-trends', (req, res) => flightController.getPerformanceTrends(req, res));
 
-// Delete flight data
-router.delete('/:flightId', (req, res) => flightController.deleteFlight(req, res));
+router.put('/:flightId', authenticateToken, flightController.updateFlight.bind(flightController));
+
+router.delete('/:flightId', authenticateToken, flightController.deleteFlight.bind(flightController));
+
+
 
 module.exports = router;

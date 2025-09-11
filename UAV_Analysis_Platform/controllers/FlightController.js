@@ -123,21 +123,31 @@ class FlightController {
         }
     }
 
-    // 获取用户飞行历史 - 增加分析数据
     async getFlightHistory(req, res) {
         try {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
 
+            // 搜索条件
+            const filters = { userId: req.user.userId };
+            if (req.query.name) {
+                filters.flightName = { $regex: req.query.name, $options: 'i' };
+            }
+            if (req.query.date) {
+                const dayStart = new Date(req.query.date);
+                const dayEnd = new Date(req.query.date);
+                dayEnd.setDate(dayEnd.getDate() + 1);
+                filters.createdAt = { $gte: dayStart, $lt: dayEnd };
+            }
+
+            const total = await FlightData.countDocuments(filters);
+
             const flights = await FlightData
-                .find({ userId: req.user.userId })
+                .find(filters)
                 .sort({ createdAt: -1 })
                 .skip(skip)
-                .limit(limit)
-                .select('flightName timestamp analysis qualityAssessment performanceMetrics networkAnalysis createdAt');
-
-            const total = await FlightData.countDocuments({ userId: req.user.userId });
+                .limit(limit);
 
             res.json({
                 success: true,
@@ -171,6 +181,7 @@ class FlightController {
             });
         }
     }
+
 
     // 新增：获取飞行历史摘要
     async getFlightHistorySummary(userId) {

@@ -1,5 +1,59 @@
 {
+  "name": "uav-analysis-platform",
+  "version": "1.0.0",
+  "description": "UAV Performance Analysis Platform - Advanced flight trajectory visualization and performance analytics",
+  "main": "UAV_Analysis_Platform/server.js",
+  "scripts": {
+    "start": "node UAV_Analysis_Platform/server.js",
+    "dev": "UAV_Analysis_Platform/node_modules/.bin/nodemon server.js",
+    "test": "UAV_Analysis_Platform/node_modules/.bin/jest",
+    "test:watch": "UAV_Analysis_Platform/node_modules/.bin/jest --watch",
+    "test:coverage": "UAV_Analysis_Platform/node_modules/.bin/jest --coverage",
+    "lint": "UAV_Analysis_Platform/node_modules/.bin/eslint .",
+    "lint:fix": "UAV_Analysis_Platform/node_modules/.bin/eslint . --fix"
+  },
+  "keywords": [
+    "uav",
+    "drone",
+    "flight-analysis",
+    "trajectory-visualization",
+    "performance-analytics",
+    "3d-visualization"
+  ],
+  "author": "Disen Jia <s223314816@deakin.edu.au>",
+  "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.8.1",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0",
+    "multer": "^1.4.5-lts.1",
     "socket.io": "^4.8.1"
-  }
+  },
+  "devDependencies": {
+    "eslint": "^8.46.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "jest": "^29.6.2",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/uav-analysis-platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/uav-analysis-platform/issues"
+  },
+  "homepage": "https://github.com/your-username/uav-analysis-platform#readme"
 }

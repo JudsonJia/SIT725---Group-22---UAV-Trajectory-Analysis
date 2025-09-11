@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - UAV Analysis Platform</title>
-    <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -95,5 +94,44 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script src="/js/auth.js"></script>
+<script>
+    $(document).ready(function() {
+        const auth = new AuthManager();
+
+        $('#register-form').on('submit', async function(e) {
+            e.preventDefault();
+
+            const firstName = $('#firstName').val();
+            const lastName = $('#lastName').val();
+            const username = $('#username').val();
+            const email = $('#email').val();
+            const password = $('#password').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            if (password !== confirmPassword) {
+                M.toast({ html: 'Passwords do not match', classes: 'red' });
+                return;
+            }
+
+            try {
+                await auth.register({
+                    username,
+                    email,
+                    password,
+                    profile: { firstName, lastName }
+                });
+
+                M.toast({ html: 'Registration successful! Please login.', classes: 'green' });
+
+                // 注册成功后跳转到 login 页面
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1000);
+            } catch (err) {
+                M.toast({ html: err.message || 'Registration failed', classes: 'red' });
+            }
+        });
+    });
+</script>
 </body>
 </html>

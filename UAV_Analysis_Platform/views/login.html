@@ -72,8 +72,34 @@
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script src="/js/auth.js"></script>
+<script>
+    $(document).ready(function() {
+        const auth = new AuthManager();
+
+        $('#login-form').on('submit', async function(e) {
+            e.preventDefault();
+
+            const email = $('#email').val();
+            const password = $('#password').val();
+            const rememberMe = $('#remember-me').is(':checked');
+
+            try {
+                const user = await auth.login(email, password, rememberMe);
+                M.toast({ html: 'Login successful!', classes: 'green' });
+
+                // 登录成功后跳转 dashboard
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 800);
+            } catch (err) {
+                M.toast({ html: err.message || 'Login failed', classes: 'red' });
+            }
+        });
+    });
+</script>
 </body>
 </html>

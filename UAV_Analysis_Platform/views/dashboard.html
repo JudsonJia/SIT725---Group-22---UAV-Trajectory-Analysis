@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAV Analysis Platform - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <style>
+        .stats-card { border-radius: 8px; }
+        .dashboard-content { display: none; }
+        .timeline-item { padding: 10px; border-left: 3px solid teal; margin: 5px 0; }
+        .btn-small { margin: 2px; }
+    </style>
+</head>
+<body class="grey lighten-4">
+
+<!-- 顶部导航 -->
+<nav class="teal">
+    <div class="nav-wrapper">
+        <a href="#" class="brand-logo" style="padding-left:15px;">UAV Dashboard</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="/flights">Flights</a></li>
+            <li><a href="/analysis">Analysis</a></li>
+            <li><a href="/visualization">Visualization</a></li>
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="javascript:void(0);" onclick="logout()">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="container">
+    <div class="preloader-wrapper big active" style="margin:50px auto; display:block;">
+        <div class="spinner-layer spinner-blue-only">
+            <div class="circle-clipper left"><div class="circle"></div></div>
+            <div class="gap-patch"><div class="circle"></div></div>
+            <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h4>Welcome, <span id="userName">User</span></h4>
+        <p id="userEmail"></p>
+
+        <!-- 统计卡片 -->
+        <div class="row">
+            <div class="col s12 m4">
+                <div class="card stats-card teal lighten-4 center-align">
+                    <div class="card-content">
+                        <span class="card-title">Total Flights</span>
+                        <h5 id="totalFlights">0</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m4">
+                <div class="card stats-card orange lighten-4 center-align">
+                    <div class="card-content">
+                        <span class="card-title">Avg Accuracy</span>
+                        <h5 id="avgAccuracy">N/A</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m4">
+                <div class="card stats-card blue lighten-4 center-align">
+                    <div class="card-content">
+                        <span class="card-title">Avg Response Time</span>
+                        <h5 id="avgResponse">N/A</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 上传区 -->
+        <div class="card">
+            <div class="card-content">
+        <span class="card-title">
+          <i class="material-icons left">cloud_upload</i> Upload Flight Data
+        </span>
+                <form id="flight-upload-form" enctype="multipart/form-data">
+                    <div class="file-field input-field">
+                        <div class="btn teal">
+                            <span>Select File</span>
+                            <input type="file" name="flightData" accept=".json" required>
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate" type="text" placeholder="Upload flight data JSON">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn waves-effect waves-light teal">
+                        <i class="material-icons left">send</i> Upload
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 最近航班列表 -->
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title"><i class="material-icons left">flight</i> Recent Flights</span>
+                <table class="striped">
+                    <thead>
+                    <tr><th>Name</th><th>Date</th><th>Points</th><th>Accuracy</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="userFlightsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 活动时间线 -->
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title"><i class="material-icons left">timeline</i> Activity Timeline</span>
+                <div id="activityTimeline"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function getToken() { return localStorage.getItem('uav_token'); }
+
+    $(document).ready(function() {
+        checkAuthStatus();
+        $('#flight-upload-form').on('submit', uploadFlightData);
+    });
+
+    async function checkAuthStatus() {
+        const token = getToken();
+        if (!token) return redirectToLogin('Please login first');
+        try {
+            const resp = await fetch('/api/auth/profile', { headers: { Authorization: 'Bearer ' + token } });
+            const data = await resp.json();
+            if (!data.success) throw new Error();
+            $('#userName').text(data.user.username);
+            $('#userEmail').text(data.user.email);
+            $('.preloader-wrapper').hide();
+            $('.dashboard-content').show();
+            loadDashboardData();
+            loadActivityTimeline();
+        } catch {
+            redirectToLogin('Session expired, please login again');
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('uav_token');
+        localStorage.removeItem('token_timestamp');
+        window.location.href = '/login';
+    }
+
+    function redirectToLogin(msg) {
+        M.toast({ html: msg, classes: 'red' });
+        setTimeout(() => window.location.href = '/login', 800);
+    }
+
+    // 上传数据
+    async function uploadFlightData(e) {
+        e.preventDefault();
+        const token = getToken();
+        const formData = new FormData(this);
+        try {
+            const res = await fetch('/api/flights/upload', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + token },
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message);
+            M.toast({ html: 'Upload successful!', classes: 'green' });
+            loadDashboardData();
+        } catch (err) {
+            M.toast({ html: err.message, classes: 'red' });
+        }
+    }
+
+    // 加载 dashboard 数据
+    async function loadDashboardData() {
+        const token = getToken();
+        try {
+            const res = await fetch('/api/dashboard/data', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            const data = await res.json();
+            $('#totalFlights').text(data.totalFlights || 0);
+            $('#avgAccuracy').text(data.avgAccuracy?.toFixed(2) || 'N/A');
+            $('#avgResponse').text(data.avgResponseTime?.toFixed(2) || 'N/A');
+
+            const flightsBody = $('#userFlightsBody');
+            flightsBody.empty();
+            (data.recentFlights || []).forEach(f => {
+                flightsBody.append(`
+          <tr>
+            <td>${f.flightName}</td>
+            <td>${new Date(f.uploadDate).toLocaleString()}</td>
+            <td>${f.totalPoints}</td>
+            <td>${f.avgAccuracy?.toFixed(2) || 'N/A'}</td>
+            <td>
+              <a href="/flights/${f.id}" class="btn-small teal">View</a>
+              <button class="btn-small orange" onclick="editFlight('${f.id}', '${f.name}')">Edit</button>
+              <button class="btn-small red" onclick="deleteFlight('${f.id}')">Delete</button>
+            </td>
+          </tr>
+        `);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // 加载活动时间线
+    async function loadActivityTimeline() {
+        const token = getToken();
+        try {
+            const res = await fetch('/api/dashboard/activity', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            const data = await res.json();
+            const timeline = $('#activityTimeline');
+            timeline.empty();
+            (data.activities || []).forEach(act => {
+                timeline.append(`<div class="timeline-item"><strong>${act.type}</strong> - ${act.message} <br><small>${new Date(act.timestamp).toLocaleString()}</small></div>`);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // 删除航班
+    async function deleteFlight(id) {
+        if (!confirm('Are you sure you want to delete this flight?')) return;
+        const token = getToken();
+        try {
+            const res = await fetch('/api/flights/' + id, {
+                method: 'DELETE',
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message);
+            M.toast({ html: 'Flight deleted', classes: 'green' });
+            loadDashboardData();
+        } catch (err) {
+            M.toast({ html: err.message, classes: 'red' });
+        }
+    }
+
+    // 编辑航班（修改名称）
+    function editFlight(id, currentName) {
+        const newName = prompt('Enter new name for this flight:', currentName);
+        if (!newName || newName === currentName) return;
+        const token = getToken();
+        fetch('/api/flights/' + id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ flightName: newName })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.message);
+                M.toast({ html: 'Flight updated', classes: 'green' });
+                loadDashboardData();
+            })
+            .catch(err => {
+                console.error(err);
+                M.toast({ html: err.message, classes: 'red' });
+            });
+    }
+</script>
+</body>
+</html>

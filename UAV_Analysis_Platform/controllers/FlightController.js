@@ -476,6 +476,53 @@ class FlightController {
         }
     }
 
+    // 更新飞行数据（主要是重命名 flightName 或其他简单信息）
+    async updateFlight(req, res) {
+        try {
+            const { flightId } = req.params;
+            const { flightName } = req.body;
+
+            if (!flightName) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'flightName is required'
+                });
+            }
+
+            const updated = await FlightData.findOneAndUpdate(
+                { _id: flightId, userId: req.user.userId },
+                { $set: { flightName } },
+                { new: true }
+            );
+
+            if (!updated) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Flight not found or not authorized'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Flight updated successfully',
+                flight: {
+                    id: updated._id,
+                    flightName: updated.flightName,
+                    timestamp: updated.timestamp,
+                    uploadDate: updated.createdAt
+                }
+            });
+        } catch (error) {
+            console.error('Update flight error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update flight: ' + error.message
+            });
+        }
+    }
+
+
+
     // 删除飞行数据
     async deleteFlight(req, res) {
         try {

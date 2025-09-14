@@ -551,7 +551,7 @@ class UAVDataProcessor {
 
     // 生成3D可视化数据 - 增强版
     static generate3DVisualizationData(flightData) {
-        const trajectory = flightData.positionData.map(point => ({
+        const trajectory = flightData.positionData.map((point, index) => ({
             position: [point.x, point.y, point.z],
             time: point.time,
             networkQuality: point.networkQuality,
@@ -559,6 +559,7 @@ class UAVDataProcessor {
             error: point.error,
             stabilized: point.stabilized
         }));
+
 
         // 网络质量覆盖点
         const networkOverlay = flightData.positionData

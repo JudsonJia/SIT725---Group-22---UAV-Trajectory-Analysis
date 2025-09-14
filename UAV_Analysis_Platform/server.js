@@ -67,16 +67,16 @@ app.post('/api/auth/demo-login', (req, res) => {
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views', 'login.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'register.html')));
 app.get('/dashboard', (req, res) => {
-    const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
-    if (!token) return res.redirect('/login');
     res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
 });
 // Flights 页面
 app.get('/flights', (req, res) => {
-    const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
-    if (!token) return res.redirect('/login');
     res.sendFile(path.join(__dirname, 'views', 'flights.html'));
 });
+app.get('/visualization', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'visualization.html'));
+});
+
 
 
 // Catch-all for SPA

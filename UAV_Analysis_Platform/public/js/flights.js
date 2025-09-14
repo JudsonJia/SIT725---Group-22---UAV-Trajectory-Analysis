@@ -43,7 +43,7 @@ function renderFlights(flights) {
         <td>${(100 - (f.averageError / 10)).toFixed(1)}%</td>
         <td>${f.responseTime} ms</td>
         <td>
-          <a class="btn-small teal" href="/flights/${f.id}">View</a>
+          <a class="btn-small teal" href="/visualization?flightId=${f.id}">View</a>
           <button class="btn-small orange" onclick="editFlight('${f.id}', '${f.flightName}')">Edit</button>
           <button class="btn-small red" onclick="deleteFlight('${f.id}')">Delete</button>
         </td>

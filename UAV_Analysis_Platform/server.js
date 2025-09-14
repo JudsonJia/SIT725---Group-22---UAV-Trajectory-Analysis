@@ -6,11 +6,15 @@ const path = require('path');
 const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/database');
+const FlightData = require('./models/FlightData');
+const mongoose = require('mongoose');
+const AnalysisReport = require('./models/AnalysisReport');
 
 // Import routes
 const authRoutes = require('./routes/auth');
 const flightRoutes = require('./routes/flights');
 const dashboardRoutes = require('./routes/dashboard');
+const analysisRoutes = require('./routes/analysis');
 
 require('dotenv').config();
 
@@ -37,6 +41,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', authRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/analysis', analysisRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -76,6 +81,11 @@ app.get('/flights', (req, res) => {
 app.get('/visualization', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'visualization.html'));
 });
+app.get('/analysis', (req, res) => {
+    console.log("Serving analysis.html from:", path.resolve(__dirname, 'views/analysis.html'));
+    res.sendFile(path.join(__dirname, 'views', 'analysis.html'));
+});
+
 
 
 
@@ -88,6 +98,48 @@ app.get('*', (req, res) => {
     if (fs.existsSync(viewsHtml)) return res.sendFile(viewsHtml);
     res.status(404).send('HTML file not found');
 });
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    socket.on('startAnalysis', async ({ flightId, userId }) => {
+        console.log('Start analysis for flight:', flightId);
+
+        let progress = 0;
+        const interval = setInterval(async () => {
+            progress += 10;
+            if (progress < 100) {
+                socket.emit('analysisProgress', {
+                    progress,
+                    message: `Processing... ${progress}%`
+                });
+            } else {
+                clearInterval(interval);
+                try {
+                    const result = {
+                        flightId: new mongoose.Types.ObjectId(flightId),
+                        userId: new mongoose.Types.ObjectId(userId),
+                        avgSpeed: 5.2,
+                        maxSpeed: 8.7,
+                        duration: 120,
+                        errorRate: 2.5
+                    };
+
+                    const report = new AnalysisReport(result);
+                    const saved = await report.save();
+
+                    socket.emit('analysisComplete', { success: true, report: saved });
+                } catch (err) {
+                    socket.emit('analysisComplete', { success: false, message: err.message });
+                }
+            }
+        }, 500);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
+
 
 // Start server
 server.listen(PORT, () => {

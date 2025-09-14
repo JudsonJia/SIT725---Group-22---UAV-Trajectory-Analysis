@@ -7,7 +7,7 @@ const flightDataSchema = new mongoose.Schema({
         required: true
     },
 
-    // 基本飞行信息
+    // Basic flight info
     flightName: {
         type: String,
         required: true
@@ -21,10 +21,10 @@ const flightDataSchema = new mongoose.Schema({
         default: Date.now
     },
 
-    // 飞行路径序列
+    // Flight sequence
     sequence: [[Number]], // e.g., [[0,0,0.5], [0.5,0.5,0.5]]
 
-    // 位置数据 - 核心飞行信息
+    // Position data - core flight info
     positionData: [{
         x: Number,
         y: Number,
@@ -41,7 +41,7 @@ const flightDataSchema = new mongoose.Schema({
         stabilized: Boolean
     }],
 
-    // 基础分析结果 - 保持原有结构
+    // Basic analysis results
     analysis: {
         totalPoints: Number,
         waypointPoints: Number,
@@ -77,7 +77,7 @@ const flightDataSchema = new mongoose.Schema({
         }
     },
 
-    // 新增：轨迹分析结果
+    // Trajectory analysis results
     trajectoryAnalysis: {
         summary: {
             overallScore: String,
@@ -215,7 +215,7 @@ const flightDataSchema = new mongoose.Schema({
         }]
     },
 
-    // 新增：性能指标
+    // Performance metrics
     performanceMetrics: {
         timeEfficiency: {
             totalFlightTime: Number,
@@ -241,7 +241,7 @@ const flightDataSchema = new mongoose.Schema({
         overallPerformanceScore: Number
     },
 
-    // 新增：网络分析
+    // Network analysis
     networkAnalysis: {
         qualityStats: {
             average: Number,
@@ -293,7 +293,7 @@ const flightDataSchema = new mongoose.Schema({
         }]
     },
 
-    // 新增：质量评估
+    // Quality assessment
     qualityAssessment: {
         overallScore: Number, // 0-100
         breakdown: {
@@ -309,13 +309,13 @@ const flightDataSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// 索引优化
+// Index optimization
 flightDataSchema.index({ userId: 1, createdAt: -1 });
 flightDataSchema.index({ userId: 1, timestamp: 1 });
 flightDataSchema.index({ 'qualityAssessment.overallScore': -1 });
 flightDataSchema.index({ 'analysis.positionAccuracy.overall.average': 1 });
 
-// 虚拟字段：飞行持续时间
+// Virtual field: flight duration
 flightDataSchema.virtual('flightDuration').get(function() {
     if (this.positionData && this.positionData.length > 1) {
         const start = this.positionData[0].time;
@@ -325,7 +325,7 @@ flightDataSchema.virtual('flightDuration').get(function() {
     return 0;
 });
 
-// 虚拟字段：总距离
+// Virtual field: total distance
 flightDataSchema.virtual('totalDistance').get(function() {
     if (!this.positionData || this.positionData.length < 2) return 0;
 
@@ -342,7 +342,7 @@ flightDataSchema.virtual('totalDistance').get(function() {
     return distance;
 });
 
-// 实例方法：获取性能摘要
+// Instance method: get performance summary
 flightDataSchema.methods.getPerformanceSummary = function() {
     return {
         flightName: this.flightName,
@@ -356,7 +356,7 @@ flightDataSchema.methods.getPerformanceSummary = function() {
     };
 };
 
-// 静态方法：获取用户统计
+// Static method: get user stats
 flightDataSchema.statics.getUserStats = function(userId) {
     return this.aggregate([
         { $match: { userId: mongoose.Types.ObjectId(userId) } },

@@ -17,14 +17,13 @@
 </head>
 <body class="grey lighten-4">
 
-<!-- 顶部导航 -->
+
 <nav class="teal">
     <div class="nav-wrapper">
         <a href="#" class="brand-logo" style="padding-left:15px;">UAV Dashboard</a>
         <ul id="nav-mobile" class="right hide-on-med-and-down">
             <li><a href="/flights">Flights</a></li>
             <li><a href="/analysis">Analysis</a></li>
-            <li><a href="/visualization">Visualization</a></li>
             <li><a href="/profile">Profile</a></li>
             <li><a href="javascript:void(0);" onclick="logout()">Logout</a></li>
         </ul>
@@ -44,35 +43,7 @@
         <h4>Welcome, <span id="userName">User</span></h4>
         <p id="userEmail"></p>
 
-        <!-- 统计卡片 -->
-        <div class="row">
-            <div class="col s12 m4">
-                <div class="card stats-card teal lighten-4 center-align">
-                    <div class="card-content">
-                        <span class="card-title">Total Flights</span>
-                        <h5 id="totalFlights">0</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m4">
-                <div class="card stats-card orange lighten-4 center-align">
-                    <div class="card-content">
-                        <span class="card-title">Avg Accuracy</span>
-                        <h5 id="avgAccuracy">N/A</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m4">
-                <div class="card stats-card blue lighten-4 center-align">
-                    <div class="card-content">
-                        <span class="card-title">Avg Response Time</span>
-                        <h5 id="avgResponse">N/A</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 上传区 -->
         <div class="card">
             <div class="card-content">
         <span class="card-title">
@@ -95,7 +66,7 @@
             </div>
         </div>
 
-        <!-- 最近航班列表 -->
+
         <div class="card">
             <div class="card-content">
                 <span class="card-title"><i class="material-icons left">flight</i> Recent Flights</span>
@@ -108,7 +79,7 @@
             </div>
         </div>
 
-        <!-- 活动时间线 -->
+
         <div class="card">
             <div class="card-content">
                 <span class="card-title"><i class="material-icons left">timeline</i> Activity Timeline</span>
@@ -183,9 +154,6 @@
                 headers: { Authorization: 'Bearer ' + token }
             });
             const data = await res.json();
-            $('#totalFlights').text(data.totalFlights || 0);
-            $('#avgAccuracy').text(data.avgAccuracy?.toFixed(2) || 'N/A');
-            $('#avgResponse').text(data.avgResponseTime?.toFixed(2) || 'N/A');
 
             const flightsBody = $('#userFlightsBody');
             flightsBody.empty();
@@ -197,7 +165,8 @@
             <td>${f.totalPoints}</td>
             <td>${f.avgAccuracy?.toFixed(2) || 'N/A'}</td>
             <td>
-              <a href="/flights/${f.id}" class="btn-small teal">View</a>
+              <a href="/visualization?flightId=${f.id}" class="btn-small blue">Visualization</a>
+              <a href="/analysis?flightId=${f.id}" class="btn-small green">Analysis</a>
               <button class="btn-small orange" onclick="editFlight('${f.id}', '${f.name}')">Edit</button>
               <button class="btn-small red" onclick="deleteFlight('${f.id}')">Delete</button>
             </td>

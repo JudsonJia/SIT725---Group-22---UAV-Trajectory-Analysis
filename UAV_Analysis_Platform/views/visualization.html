@@ -2,29 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>UAV Flight Visualization</title>
+    <title>UAV Flight Visualization (Materialize)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Materialize CSS & Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+
     <style>
-        body { margin: 0; overflow: hidden; }
+        html, body { height: 100%; margin: 0; overflow: hidden; }
         canvas { display: block; }
         #loading {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(0,0,0,0.7); color: #fff;
-            padding: 6px 10px; border-radius: 6px; font: 14px/1.2 sans-serif;
-            z-index: 10;
+            position: absolute; top: 16px; left: 16px; z-index: 1000;
         }
-        #controls {
-            position: absolute; bottom: 20px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6); color: #fff;
-            padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; gap: 10px;
-            font: 14px/1.2 sans-serif; z-index: 10;
+        #controls-card {
+            position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+            z-index: 1000; width: min(680px, 92vw);
+            background: rgba(33,33,33,0.72);
+            border-radius: 12px;
         }
-        #controls button {
-            padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer;
-            background: #0077ff; color: white;
-        }
-        #controls input[type="range"] { width: 320px; }
+        #controls-card .card-content { padding-bottom: 8px; }
+        #controls-row { margin-bottom: 4px; }
+        .white-text .range-field input[type=range]::-webkit-slider-thumb { background-color: #26a69a; }
+        .white-text .range-field input[type=range]::-moz-range-thumb { background-color: #26a69a; }
+        .btn-flat.white-text { opacity: 0.9; }
+        .divider-thin { height: 1px; background: rgba(255,255,255,0.12); margin: 8px 0 4px; }
+        #progressLabel { font-variant-numeric: tabular-nums; }
     </style>
+
     <!-- Three.js ES Module -->
     <script type="importmap">
         {
@@ -37,27 +43,86 @@
         }
     </script>
 </head>
-<body>
-<div id="loading">Loading flight data…</div>
-<div id="controls">
-    <button id="playPause">▶ Play</button>
-    <input id="timeline" type="range" min="0" max="1" step="0.001" value="0">
+<body class="grey darken-4">
+
+<!-- Top loading indicator -->
+<div id="loading" class="chip teal lighten-1 white-text z-depth-2">
+    <i class="material-icons left">sync</i>
+    Loading flight data…
 </div>
 
+<!-- Controls panel -->
+<div id="controls-card" class="card z-depth-3">
+    <div class="card-content white-text">
+        <div class="row" id="controls-row" style="margin-bottom:0">
+            <div class="col s12 m3" style="display:flex; gap:8px; align-items:center;">
+                <a id="playPause" class="btn waves-effect waves-light teal">
+                    <i class="material-icons left">play_arrow</i>Play
+                </a>
+                <a id="restart" class="btn-flat white-text tooltipped" data-position="top" data-tooltip="Restart from beginning">
+                    <i class="material-icons">replay</i>
+                </a>
+            </div>
+
+            <div class="col s12 m9">
+                <div class="range-field" style="margin-top:4px;">
+                    <input id="timeline" type="range" min="0" max="1" step="0.001" value="0">
+                </div>
+                <div class="valign-wrapper" style="justify-content: space-between; margin-top:-6px;">
+                    <span id="progressLabel" class="white-text text-lighten-2">0%</span>
+                    <div class="right">
+                        <i class="material-icons tiny" style="vertical-align:middle; opacity:.7;">schedule</i>
+                        <span class="white-text text-lighten-2">Drag to seek</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider-thin"></div>
+
+        <div class="row" style="margin:0">
+            <div class="col s12 m4">
+                <div class="range-field" style="margin-top:0;">
+                    <label for="speed" class="white-text" style="opacity:.85">Playback speed</label>
+                    <input id="speed" type="range" min="0.25" max="3" step="0.05" value="1">
+                </div>
+            </div>
+            <div class="col s12 m8 right-align" style="display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+                <a id="fitView" class="btn-flat white-text tooltipped" data-position="top" data-tooltip="Fit view to trajectory">
+                    <i class="material-icons">center_focus_strong</i>
+                </a>
+                <a id="toggleGrid" class="btn-flat white-text tooltipped" data-position="top" data-tooltip="Toggle ground grid">
+                    <i class="material-icons">grid_on</i>
+                </a>
+                <a id="help" class="btn-flat white-text tooltipped" data-position="top" data-tooltip="Controls: Drag = rotate / Wheel = zoom / Right-click = pan">
+                    <i class="material-icons">help_outline</i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 <script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        const elems = document.querySelectorAll('.tooltipped');
+        M.Tooltip.init(elems);
+    });
+
     import * as THREE from 'three';
     import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
-    // ===== Params & Scene =====
     const params = new URLSearchParams(window.location.search);
     const flightId = params.get('flightId');
     const hud = document.getElementById('loading');
-    if (!flightId) { hud.textContent = '❌ No flightId provided'; throw new Error('No flightId'); }
+    if (!flightId) { setHud('error', 'Missing flightId'); throw new Error('No flightId'); }
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeeeeee);
+    scene.background = new THREE.Color(0x121212);
 
     const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 5000);
     camera.position.set(10, 10, 10);
@@ -68,33 +133,58 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
 
-    // Lights & Helpers
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(10, 20, 10);
     scene.add(dirLight, new THREE.AmbientLight(0x666666));
-    scene.add(new THREE.GridHelper(100, 50));
+    const grid = new THREE.GridHelper(100, 50, 0x444444, 0x333333);
+    scene.add(grid);
 
-    // ===== Globals =====
     const SCALE = 50;
-    let points = [];         // THREE.Vector3[] trajectory points (world units)
-    let drone = null;        // THREE.Object3D (model)
-    let progress = 0;        // 0..1
+    let points = [];
+    let drone = null;
+    let progress = 0;
     let isPlaying = false;
-    const speedBase = 0.0008; // base speed
-    let speed = speedBase;
-
+    const speedBase = 0.0008;
+    let speedMultiplier = 1;
     const playPauseBtn = document.getElementById('playPause');
     const timeline = document.getElementById('timeline');
+    const speedRange = document.getElementById('speed');
+    const restartBtn = document.getElementById('restart');
+    const fitViewBtn = document.getElementById('fitView');
+    const toggleGridBtn = document.getElementById('toggleGrid');
+    const progressLabel = document.getElementById('progressLabel');
 
     playPauseBtn.addEventListener('click', () => {
         isPlaying = !isPlaying;
-        playPauseBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+        playPauseBtn.innerHTML = isPlaying
+            ? '<i class="material-icons left">pause</i>Pause'
+            : '<i class="material-icons left">play_arrow</i>Play';
+    });
+    restartBtn.addEventListener('click', () => {
+        progress = 0;
+        timeline.value = 0;
+        updateProgressLabel();
     });
     timeline.addEventListener('input', () => {
         progress = parseFloat(timeline.value);
+        updateProgressLabel();
     });
+    speedRange.addEventListener('input', () => {
+        speedMultiplier = parseFloat(speedRange.value);
+    });
+    fitViewBtn.addEventListener('click', () => fitCameraToPoints());
+    toggleGridBtn.addEventListener('click', () => { grid.visible = !grid.visible; });
 
-    // ===== Fetch flight visualization data =====
+    function setHud(type, msg) {
+        const icon = type === 'error' ? 'error' : (type === 'warn' ? 'warning' : 'done');
+        hud.className = 'chip ' + (type==='error' ? 'red' : (type==='warn' ? 'orange' : 'teal')) + ' lighten-1 white-text z-depth-2';
+        hud.innerHTML = '<i class="material-icons left">'+icon+'</i>' + msg;
+        hud.style.display = 'inline-flex';
+        if (type !== 'error') setTimeout(()=> { hud.style.display='none'; }, 1600);
+    }
+    const warn = (msg)=>setHud('warn', msg);
+    const info = (msg)=>setHud('info', msg);
+
     async function loadFlightData() {
         const token = localStorage.getItem('uav_token') || '';
         const res = await fetch(`/api/flights/${flightId}/visualization`, {
@@ -106,24 +196,21 @@
         hud.style.display = 'none';
 
         const trajectory = result.data.trajectory || [];
-        // Build points (x,y,z -> scale; note y<->z swap per your convention)
         points = trajectory.map(p => new THREE.Vector3(
             p.position[0] * SCALE,
-            p.position[2] * SCALE, // height
-            p.position[1] * SCALE  // horizontal
+            p.position[2] * SCALE,
+            p.position[1] * SCALE
         ));
 
-        // Draw path line
         if (points.length) {
             const g = new THREE.BufferGeometry().setFromPoints(points);
-            const m = new THREE.LineBasicMaterial({ color: 0x0077ff });
+            const m = new THREE.LineBasicMaterial({ color: 0x26a69a });
             scene.add(new THREE.Line(g, m));
         }
 
-        // Draw waypoints (sequence)
         if (Array.isArray(result.data.sequence) && result.data.sequence.length) {
             const sGeom = new THREE.SphereGeometry(0.5, 16, 16);
-            const sMat  = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const sMat  = new THREE.MeshStandardMaterial({ color: 0xff7043 });
             for (const [x,y,z] of result.data.sequence) {
                 const wp = new THREE.Mesh(sGeom, sMat);
                 wp.position.set(x*SCALE, z*SCALE, y*SCALE);
@@ -131,45 +218,39 @@
             }
         }
 
-        // Fit camera to trajectory bounds
-        if (points.length) {
-            const box = new THREE.Box3().setFromPoints(points);
-            const center = box.getCenter(new THREE.Vector3());
-            const size   = box.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov    = camera.fov * (Math.PI/180);
-            let camDist  = Math.abs(maxDim / 2 / Math.tan(fov/2)) * 1.5;
-            camera.position.set(center.x + camDist, center.y + camDist, center.z + camDist);
-            camera.lookAt(center);
-            controls.target.copy(center);
-            controls.update();
-        }
+        fitCameraToPoints();
 
-        // Load drone model (with DRACO support). Fallback to box if it fails.
         await loadDroneModel(['/models/flying_drone.glb','/models/drone.glb']);
-        // If still no model, create fallback cube
         if (!drone) {
-            warn('Model failed to load. Using fallback cube.');
+            warn('Failed to load model, using fallback box.');
             const box = new THREE.Mesh(
                 new THREE.BoxGeometry(1,0.3,1),
-                new THREE.MeshStandardMaterial({ color: 0x00cc66 })
+                new THREE.MeshStandardMaterial({ color: 0x80cbc4 })
             );
             drone = box;
             scene.add(drone);
         }
 
-        // Put drone at start
         if (points.length) drone.position.copy(points[0]);
     }
 
-    // ===== Model loader with DRACO =====
-    function warn(msg){ hud.style.display = 'block'; hud.textContent = '⚠ ' + msg; }
-    function info(msg){ hud.style.display = 'block'; hud.textContent = msg; setTimeout(()=>hud.style.display='none', 1600); }
+    function fitCameraToPoints() {
+        if (!points.length) return;
+        const box = new THREE.Box3().setFromPoints(points);
+        const center = box.getCenter(new THREE.Vector3());
+        const size   = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov    = camera.fov * (Math.PI/180);
+        let camDist  = Math.abs(maxDim / 2 / Math.tan(fov/2)) * 1.5;
+        camera.position.set(center.x + camDist, center.y + camDist, center.z + camDist);
+        camera.lookAt(center);
+        controls.target.copy(center);
+        controls.update();
+    }
 
     async function loadDroneModel(candidates) {
         const gltfLoader = new GLTFLoader();
         const draco = new DRACOLoader();
-        // DRACO decoder path (CDN matching the same three version)
         draco.setDecoderPath('https://unpkg.com/three@0.152.2/examples/jsm/libs/draco/');
         draco.preload();
         gltfLoader.setDRACOLoader(draco);
@@ -181,26 +262,23 @@
                         drone = gltf.scene;
                         scene.add(drone);
 
-                        // Auto-scale model to ~5% of trajectory max dimension
                         const box = new THREE.Box3().setFromObject(drone);
                         const modelSize = box.getSize(new THREE.Vector3());
                         const modelMax  = Math.max(modelSize.x, modelSize.y, modelSize.z) || 1;
 
-                        let desired = 5; // default size if no trajectory
+                        let desired = 5;
                         if (points.length) {
                             const trajBox = new THREE.Box3().setFromPoints(points);
                             const trajSize = trajBox.getSize(new THREE.Vector3());
-                            desired = Math.max(trajSize.x, trajSize.y, trajSize.z) * 0.05; // 5% of traj
+                            desired = Math.max(trajSize.x, trajSize.y, trajSize.z) * 0.05;
                         }
                         const scale = desired / modelMax;
                         drone.scale.setScalar(scale);
 
-                        // Normalize pivot roughly: center it
                         const box2 = new THREE.Box3().setFromObject(drone);
                         const center = box2.getCenter(new THREE.Vector3());
-                        drone.position.sub(center); // move model so its center is at (0,0,0), then we'll put to track
+                        drone.position.sub(center);
 
-                        // Improve visibility
                         drone.traverse(obj => {
                             if (obj.isMesh) {
                                 obj.castShadow = true;
@@ -209,22 +287,21 @@
                             }
                         });
 
-                        info('Model loaded ✓');
+                        info('Model loaded successfully');
                         resolve();
-                    }, (ev) => {
-                        // progress (optional)
-                    }, (err) => reject(err));
+                    }, undefined, (err) => reject(err));
                 });
-                // success for this candidate
                 return;
             } catch (e) {
-                console.warn('Model load failed:', candidates[0], e?.message || e);
-                // try next candidate
+                console.warn('Model load failed:', url, e?.message || e);
             }
         }
     }
 
-    // ===== Animate =====
+    function updateProgressLabel(){
+        progressLabel.textContent = Math.round(progress * 100) + '%';
+    }
+
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
@@ -237,30 +314,26 @@
             if (i < points.length - 1) {
                 const start = points[i];
                 const end = points[i + 1];
-
-                // 🚀 只更新位置，不控制旋转
                 drone.position.lerpVectors(start, end, t);
             }
 
             if (isPlaying) {
-                progress += speed;
-                if (progress > 1) progress = 0; // 循环播放
+                progress += speedBase * speedMultiplier;
+                if (progress > 1) progress = 0;
                 timeline.value = progress;
+                updateProgressLabel();
             }
         }
 
         renderer.render(scene, camera);
     }
 
-
-    // ===== Boot =====
     loadFlightData().catch(err => {
-        hud.textContent = '❌ ' + (err?.message || err);
+        setHud('error', (err?.message || err));
         console.error(err);
     });
     animate();
 
-    // ===== Resize =====
     addEventListener('resize', () => {
         camera.aspect = innerWidth / innerHeight;
         camera.updateProjectionMatrix();

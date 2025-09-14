@@ -34,6 +34,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.0",
     "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.17.2",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
@@ -50,10 +51,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/uav-analysis-platform.git"
+    "url": "https://github.com/JudsonJia/SIT725---Group-22---UAV-Trajectory-Analysis.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/uav-analysis-platform/issues"
+    "url": "https://github.com/JudsonJia/SIT725---Group-22---UAV-Trajectory-Analysis/issues"
   },
-  "homepage": "https://github.com/your-username/uav-analysis-platform#readme"
+  "homepage": "https://github.com/JudsonJia/SIT725---Group-22---UAV-Trajectory-Analysis#readme"
 }

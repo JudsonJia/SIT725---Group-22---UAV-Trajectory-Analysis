@@ -9,6 +9,7 @@ const connectDB = require('./config/database');
 const FlightData = require('./models/FlightData');
 const mongoose = require('mongoose');
 const AnalysisReport = require('./models/AnalysisReport');
+const UAVDataProcessor = require('./models/UAVDataProcessor');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -115,13 +116,27 @@ io.on('connection', (socket) => {
             } else {
                 clearInterval(interval);
                 try {
+                    // Fetch the actual flight data
+                    const flightData = await FlightData.findOne({
+                        _id: flightId,
+                        userId: userId
+                    });
+
+                    if (!flightData) {
+                        throw new Error('Flight data not found');
+                    }
+
+                    // Use UAVDataProcessor to generate analysis result
+                    const analysisResult = UAVDataProcessor.generateSimpleAnalysisResult(flightData);
+
                     const result = {
                         flightId: new mongoose.Types.ObjectId(flightId),
                         userId: new mongoose.Types.ObjectId(userId),
-                        avgSpeed: 5.2,
-                        maxSpeed: 8.7,
-                        duration: 120,
-                        errorRate: 2.5
+                        flightName: flightData.flightName,
+                        avgSpeed: analysisResult.avgSpeed,
+                        maxSpeed: analysisResult.maxSpeed,
+                        duration: analysisResult.duration,
+                        errorRate: analysisResult.errorRate
                     };
 
                     const report = new AnalysisReport(result);
@@ -129,6 +144,7 @@ io.on('connection', (socket) => {
 
                     socket.emit('analysisComplete', { success: true, report: saved });
                 } catch (err) {
+                    console.error('Analysis error:', err);
                     socket.emit('analysisComplete', { success: false, message: err.message });
                 }
             }

@@ -55,9 +55,9 @@
                                 <label for="password">Password</label>
                                 <div class="password-strength" style="margin-top: 10px;">
                                     <div class="progress">
-                                        <div class="determinate" style="width: 0%"></div>
+                                        <div id="password-strength-bar" class="determinate" style="width: 0%"></div>
                                     </div>
-                                    <span class="grey-text text-darken-1" style="font-size: 12px;">Password strength</span>
+                                    <span id="password-strength-text" class="grey-text text-darken-1" style="font-size: 12px;">Password strength</span>
                                 </div>
                             </div>
                         </div>
@@ -67,6 +67,7 @@
                                 <i class="material-icons prefix">lock</i>
                                 <input id="confirmPassword" type="password" class="validate" required>
                                 <label for="confirmPassword">Confirm Password</label>
+                                <span id="password-match-helper" class="helper-text"></span>
                             </div>
                         </div>
 
@@ -98,6 +99,112 @@
     $(document).ready(function() {
         const auth = new AuthManager();
 
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let score = 0;
+            let feedback = [];
+
+            // Length check
+            if (password.length >= 8) {
+                score += 25;
+            } else if (password.length >= 6) {
+                score += 10;
+                feedback.push("At least 8 characters recommended");
+            } else {
+                feedback.push("Too short");
+            }
+
+            // Lowercase letters
+            if (/[a-z]/.test(password)) {
+                score += 15;
+            } else {
+                feedback.push("Add lowercase letters");
+            }
+
+            // Uppercase letters
+            if (/[A-Z]/.test(password)) {
+                score += 15;
+            } else {
+                feedback.push("Add uppercase letters");
+            }
+
+            // Numbers
+            if (/\d/.test(password)) {
+                score += 15;
+            } else {
+                feedback.push("Add numbers");
+            }
+
+            // Special characters
+            if (/[^A-Za-z0-9]/.test(password)) {
+                score += 30;
+            } else {
+                feedback.push("Add special characters");
+            }
+
+            let strength = 'Very Weak';
+            let color = '#f44336'; // Red
+
+            if (score >= 80) {
+                strength = 'Very Strong';
+                color = '#4caf50'; // Green
+            } else if (score >= 60) {
+                strength = 'Strong';
+                color = '#8bc34a'; // Light Green
+            } else if (score >= 40) {
+                strength = 'Medium';
+                color = '#ff9800'; // Orange
+            } else if (score >= 20) {
+                strength = 'Weak';
+                color = '#ff5722'; // Deep Orange
+            }
+
+            return { score, strength, color, feedback };
+        }
+
+        // Update password strength indicator
+        $('#password').on('input', function() {
+            const password = $(this).val();
+            const strengthBar = $('#password-strength-bar');
+            const strengthText = $('#password-strength-text');
+
+            if (password.length === 0) {
+                strengthBar.css('width', '0%');
+                strengthText.text('Password strength').removeClass().addClass('grey-text text-darken-1');
+                return;
+            }
+
+            const result = checkPasswordStrength(password);
+
+            strengthBar.css({
+                'width': result.score + '%',
+                'background-color': result.color
+            });
+
+            strengthText.text(`${result.strength}${result.feedback.length > 0 ? ' - ' + result.feedback.slice(0, 2).join(', ') : ''}`)
+                .removeClass()
+                .css('color', result.color);
+        });
+
+        // Check password match
+        $('#confirmPassword').on('input', function() {
+            const password = $('#password').val();
+            const confirmPassword = $(this).val();
+            const helper = $('#password-match-helper');
+
+            if (confirmPassword.length === 0) {
+                helper.text('').removeClass();
+                return;
+            }
+
+            if (password === confirmPassword) {
+                helper.text('Passwords match').removeClass().addClass('helper-text green-text');
+            } else {
+                helper.text('Passwords do not match').removeClass().addClass('helper-text red-text');
+            }
+        });
+
+        // Form submission
         $('#register-form').on('submit', async function(e) {
             e.preventDefault();
 
@@ -110,6 +217,13 @@
 
             if (password !== confirmPassword) {
                 M.toast({ html: 'Passwords do not match', classes: 'red' });
+                return;
+            }
+
+            // Check minimum password strength
+            const strengthResult = checkPasswordStrength(password);
+            if (strengthResult.score < 40) {
+                M.toast({ html: 'Please choose a stronger password', classes: 'orange' });
                 return;
             }
 
@@ -131,6 +245,9 @@
                 M.toast({ html: err.message || 'Registration failed', classes: 'red' });
             }
         });
+
+        // Initialize Materialize components
+        M.AutoInit();
     });
 </script>
 </body>

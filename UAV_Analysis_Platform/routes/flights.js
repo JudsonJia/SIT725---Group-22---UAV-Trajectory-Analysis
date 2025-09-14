@@ -26,14 +26,6 @@ router.get('/:flightId/visualization', (req, res) => flightController.getVisuali
 // Generate report
 router.get('/:flightId/report', (req, res) => flightController.generateReport(req, res));
 
-// 新增：获取轨迹分析
-router.get('/:flightId/trajectory-analysis', (req, res) => flightController.getTrajectoryAnalysis(req, res));
-
-// 新增：比较多个飞行
-router.post('/compare', (req, res) => flightController.compareFlights(req, res));
-
-// 新增：获取性能趋势
-router.get('/performance-trends', (req, res) => flightController.getPerformanceTrends(req, res));
 
 router.put('/:flightId', authenticateToken, flightController.updateFlight.bind(flightController));
 

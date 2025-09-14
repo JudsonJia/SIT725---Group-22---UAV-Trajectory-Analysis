@@ -102,7 +102,7 @@
         }
     }
 
-    // Load all reports
+    // Load all reports with corrected display format
     function loadReports() {
         fetch(`/api/analysis/reports`, { headers: { Authorization: "Bearer " + token } })
             .then(res => res.json())
@@ -112,14 +112,28 @@
                     data.items.forEach(r => {
                         const li = document.createElement("li");
                         li.className = "collection-item";
+
+                        // Format the display properly
+                        const avgSpeed = (r.avgSpeed || 0).toFixed(2);
+                        const maxSpeed = (r.maxSpeed || 0).toFixed(2);
+                        const duration = r.duration || 0;
+                        const errorDisplay = r.errorRate ? `${r.errorRate.toFixed(1)}cm` : 'N/A';
+
                         li.innerHTML = `
-                <i class="material-icons left">description</i>
-                <span><strong>${r.flightName || "Unnamed Flight"}</strong></span><br>
-                Avg: ${r.avgSpeed} | Max: ${r.maxSpeed} | Duration: ${r.duration}s | Error: ${r.errorRate}%
-                <button class="btn-small red right" onclick="deleteReport('${r._id}')">
-                  <i class="material-icons">delete</i>
-                </button>
-              `;
+                            <div class="content">
+                                <i class="material-icons left">description</i>
+                                <span><strong>${r.flightName || "Unnamed Flight"}</strong></span>
+                                <div class="report-details">
+                                    Speed: ${avgSpeed}m/s (avg) | ${maxSpeed}m/s (max)<br>
+                                    Duration: ${duration}s | Accuracy: ${errorDisplay}
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-small red" onclick="deleteReport('${r._id}')">
+                                    <i class="material-icons">delete</i>
+                                </button>
+                            </div>
+                        `;
                         reportList.appendChild(li);
                     });
                 } else {

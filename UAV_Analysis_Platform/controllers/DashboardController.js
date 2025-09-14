@@ -3,12 +3,12 @@ const FlightData = require('../models/FlightData');
 const mongoose = require('mongoose');
 
 class DashboardController {
-    // 获取仪表板主要数据
+    // Get main dashboard data
     async getDashboardData(req, res) {
         try {
             const userId = req.user.userId;
 
-            // 获取用户信息
+            // Get user info
             const user = await User.findById(userId).select('-password');
             if (!user) {
                 return res.status(404).json({
@@ -17,23 +17,23 @@ class DashboardController {
                 });
             }
 
-            // 获取飞行统计
+            // Get total flights
             const totalFlights = await FlightData.countDocuments({ userId });
 
-            // 获取最近5次飞行
+            // Get last 5 flights
             const recentFlights = await FlightData.find({ userId })
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .select('flightName timestamp analysis.totalPoints analysis.responseTime analysis.positionAccuracy.overall.average createdAt');
 
-            // 计算平均精度和其他统计
+            // Calculate statistics
             let statistics = {
                 totalFlights,
                 avgAccuracy: 0,
                 totalDataPoints: 0,
                 avgResponseTime: 0,
                 totalFlightTime: 0,
-                networkQuality: 85 // 模拟数据
+                networkQuality: 85 // mock data
             };
 
             if (totalFlights > 0) {
@@ -49,7 +49,6 @@ class DashboardController {
                     }
                 ]);
 
-
                 if (flightStats.length > 0) {
                     const stats = flightStats[0];
                     statistics.avgAccuracy = Math.max(0, 100 - (stats.avgError / 10));
@@ -58,7 +57,7 @@ class DashboardController {
                 }
             }
 
-            // 获取今日活动
+            // Get today's flights
             const todayStart = new Date();
             todayStart.setHours(0, 0, 0, 0);
 
@@ -81,7 +80,7 @@ class DashboardController {
                     avgAccuracy: statistics.avgAccuracy.toFixed(1) + '%',
                     totalDataPoints: statistics.totalDataPoints,
                     avgResponseTime: statistics.avgResponseTime + 'ms',
-                    totalFlightTime: Math.round(statistics.totalFlights * 15) + 'h', // 估算
+                    totalFlightTime: Math.round(statistics.totalFlights * 15) + 'h', // estimated
                     networkQuality: statistics.networkQuality + '%',
                     todayFlights
                 },
@@ -105,19 +104,19 @@ class DashboardController {
         }
     }
 
-    // 获取活动时间线
+    // Get activity timeline
     async getActivityTimeline(req, res) {
         try {
             const userId = req.user.userId;
             const limit = parseInt(req.query.limit) || 10;
 
-            // 获取最近的飞行活动
+            // Get recent flight activities
             const recentActivities = await FlightData.find({ userId })
                 .sort({ createdAt: -1 })
                 .limit(limit)
                 .select('flightName createdAt analysis.totalPoints');
 
-            // 构建活动时间线
+            // Build timeline items
             const activities = recentActivities.map(flight => ({
                 type: 'flight_upload',
                 title: `Uploaded ${flight.flightName}`,
@@ -127,7 +126,7 @@ class DashboardController {
                 color: 'blue'
             }));
 
-            // 添加一些模拟的系统活动
+            // Add mock system event
             const now = new Date();
             activities.push({
                 type: 'system',
@@ -138,7 +137,7 @@ class DashboardController {
                 color: 'green'
             });
 
-            // 按时间排序
+            // Sort by timestamp
             activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             res.json({
@@ -155,122 +154,7 @@ class DashboardController {
         }
     }
 
-    // 获取性能图表数据
-    async getChartData(req, res) {
-        try {
-            const userId = req.user.userId;
-            const days = parseInt(req.query.days) || 7;
-
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - days);
-
-            // 获取指定时间范围内的飞行数据
-            const flights = await FlightData.find({
-                userId,
-                createdAt: { $gte: startDate }
-            }).select('createdAt analysis.positionAccuracy.overall.average analysis.responseTime');
-
-            // 按日期分组
-            const chartData = {};
-            flights.forEach(flight => {
-                const date = flight.createdAt.toISOString().split('T')[0];
-                if (!chartData[date]) {
-                    chartData[date] = {
-                        accuracy: [],
-                        responseTime: []
-                    };
-                }
-
-                const accuracy = Math.max(0, 100 - ((flight.analysis?.positionAccuracy?.overall?.average || 0) / 10));
-                chartData[date].accuracy.push(accuracy);
-                chartData[date].responseTime.push(flight.analysis?.responseTime || 0);
-            });
-
-            // 计算每日平均值
-            const labels = [];
-            const accuracyData = [];
-            const responseTimeData = [];
-
-            for (let i = days - 1; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
-                const dayName = date.toLocaleDateString('en', { weekday: 'short' });
-
-                labels.push(dayName);
-
-                if (chartData[dateStr]) {
-                    const dayData = chartData[dateStr];
-                    const avgAccuracy = dayData.accuracy.reduce((a, b) => a + b, 0) / dayData.accuracy.length;
-                    const avgResponseTime = dayData.responseTime.reduce((a, b) => a + b, 0) / dayData.responseTime.length;
-
-                    accuracyData.push(avgAccuracy.toFixed(1));
-                    responseTimeData.push(avgResponseTime.toFixed(0));
-                } else {
-                    accuracyData.push(null);
-                    responseTimeData.push(null);
-                }
-            }
-
-            res.json({
-                success: true,
-                chartData: {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Flight Accuracy (%)',
-                            data: accuracyData,
-                            borderColor: '#26a69a',
-                            backgroundColor: 'rgba(38, 166, 154, 0.1)'
-                        },
-                        {
-                            label: 'Response Time (ms)',
-                            data: responseTimeData,
-                            borderColor: '#ff9800',
-                            backgroundColor: 'rgba(255, 152, 0, 0.1)'
-                        }
-                    ]
-                }
-            });
-
-        } catch (error) {
-            console.error('Chart data error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to load chart data: ' + error.message
-            });
-        }
-    }
-
-    // 快速上传处理
-    async quickUpload(req, res) {
-        try {
-            // 这里重用FlightController的上传逻辑
-            // 但简化响应，适合仪表板的快速上传
-
-            if (!req.file) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'No file uploaded'
-                });
-            }
-
-            res.json({
-                success: true,
-                message: 'File uploaded successfully',
-                flightId: 'temp_' + Date.now() // 临时ID，实际处理后会更新
-            });
-
-        } catch (error) {
-            console.error('Quick upload error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Upload failed: ' + error.message
-            });
-        }
-    }
-
-    // 更新飞行数据（只允许改 flightName）
+    // Update flight name
     async updateFlight(req, res) {
         try {
             const { flightId } = req.params;

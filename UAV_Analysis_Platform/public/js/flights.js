@@ -1,3 +1,4 @@
+// Get JWT token from local storage
 function getToken() {
     return localStorage.getItem('uav_token');
 }
@@ -6,6 +7,7 @@ let currentPage = 1;
 let searchQuery = {};
 let flightsCache = [];
 
+// Load flights with pagination and optional filters
 async function loadFlights(page = 1) {
     currentPage = page;
     const token = getToken();
@@ -30,6 +32,7 @@ async function loadFlights(page = 1) {
     }
 }
 
+// Render flights table
 function renderFlights(flights) {
     const tbody = $('#flightsTableBody');
     tbody.empty();
@@ -52,6 +55,7 @@ function renderFlights(flights) {
     });
 }
 
+// Render pagination controls
 function renderPagination(pagination) {
     const ul = $('#pagination');
     ul.empty();
@@ -68,7 +72,7 @@ function renderPagination(pagination) {
     }
 }
 
-// 删除航班
+// Delete single flight
 async function deleteFlight(id) {
     if (!confirm('Delete this flight?')) return;
     const token = getToken();
@@ -87,7 +91,7 @@ async function deleteFlight(id) {
     }
 }
 
-// 编辑航班
+// Edit flight name
 function editFlight(id, currentName) {
     const newName = prompt('New name:', currentName);
     if (!newName || newName === currentName) return;
@@ -112,7 +116,7 @@ function editFlight(id, currentName) {
         });
 }
 
-// 批量删除
+// Bulk delete selected flights
 async function bulkDelete() {
     const ids = $('.select-flight:checked').map((_, el) => $(el).data('id')).get();
     if (!ids.length) return alert('Select at least one flight');
@@ -122,7 +126,7 @@ async function bulkDelete() {
     }
 }
 
-// 批量导出 CSV
+// Bulk export selected flights as CSV
 function bulkExport() {
     const ids = $('.select-flight:checked').map((_, el) => $(el).data('id')).get();
     const rows = flightsCache.filter(f => ids.includes(f.id));
@@ -142,12 +146,12 @@ function bulkExport() {
     URL.revokeObjectURL(url);
 }
 
-// 全选/全不选
+// Select/unselect all flights
 $('#selectAll').on('change', function () {
     $('.select-flight').prop('checked', this.checked);
 });
 
-// 搜索提交
+// Search flights
 $('#searchForm').on('submit', function (e) {
     e.preventDefault();
     searchQuery = {
@@ -157,11 +161,11 @@ $('#searchForm').on('submit', function (e) {
     loadFlights(1);
 });
 
-// 批量按钮绑定
+// Bind bulk action buttons
 $('#bulkDeleteBtn').on('click', bulkDelete);
 $('#bulkExportBtn').on('click', bulkExport);
 
-// 初始化加载
+// Init page
 $(document).ready(() => {
     loadFlights();
 });

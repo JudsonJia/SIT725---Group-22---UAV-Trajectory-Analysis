@@ -1,3 +1,4 @@
+// Middleware for verifying JWT authentication tokens
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = async (req, res, next) => {

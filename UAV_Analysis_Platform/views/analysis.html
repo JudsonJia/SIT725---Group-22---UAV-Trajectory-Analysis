@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UAV Flight Analysis</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { margin-top: 20px; }
+    </style>
+</head>
+<body class="container">
+
+<h4>Flight Analysis</h4>
+
+<!-- Status display -->
+<div id="status" class="card-panel grey lighten-3">⏳ Waiting...</div>
+
+<!-- Start analysis button (only visible when flightId exists) -->
+<button id="startBtn" class="btn waves-effect waves-light green" style="display:none;">
+    <i class="material-icons left">play_arrow</i> Start Analysis
+</button>
+
+<!-- History reports -->
+<div id="history" class="section" style="margin-top:20px;">
+    <h5>History Reports</h5>
+    <ul id="report-list" class="collection"></ul>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    const params = new URLSearchParams(location.search);
+    const flightId = params.get('flightId');
+    const token = localStorage.getItem('uav_token');
+
+    const statusDiv = document.getElementById('status');
+    const reportList = document.getElementById('report-list');
+    const startBtn = document.getElementById('startBtn');
+
+    const socket = io();
+
+    // Decode userId from JWT token
+    function getUserIdFromToken() {
+        if (!token) return null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.userId || null;
+        } catch (e) {
+            console.error("Failed to decode token:", e);
+            return null;
+        }
+    }
+
+    const userId = getUserIdFromToken();
+
+    // Initialize page
+    initAnalysisPage();
+
+    function initAnalysisPage() {
+        if (!userId) {
+            statusDiv.className = "card-panel red lighten-4";
+            statusDiv.textContent = "❌ Missing userId in token. Please re-login.";
+            startBtn.style.display = "none";
+        } else if (flightId && flightId !== "null") {
+            // With flightId → can start analysis
+            statusDiv.className = "card-panel teal lighten-4";
+            statusDiv.textContent = "✅ Ready. Click start analysis in UI (socket).";
+            startBtn.style.display = "inline-block";
+        } else {
+            // Without flightId → show all reports
+            statusDiv.className = "card-panel blue lighten-4";
+            statusDiv.textContent = "📚 Showing all analysis reports.";
+            startBtn.style.display = "none";
+        }
+        loadReports();
+    }
+
+    // Delete report
+    async function deleteReport(reportId) {
+        if (!confirm('Delete this report?')) return;
+        try {
+            const res = await fetch(`/api/analysis/reports/${reportId}`, {
+                method: 'DELETE',
+                headers: { Authorization: "Bearer " + token }
+            });
+            const data = await res.json();
+            if (data.success) {
+                M.toast({ html: 'Report deleted', classes: 'green' });
+                loadReports();
+            } else {
+                M.toast({ html: data.message, classes: 'red' });
+            }
+        } catch (err) {
+            console.error(err);
+            M.toast({ html: 'Delete failed', classes: 'red' });
+        }
+    }
+
+    // Load all reports
+    function loadReports() {
+        fetch(`/api/analysis/reports`, { headers: { Authorization: "Bearer " + token } })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.items.length) {
+                    reportList.innerHTML = "";
+                    data.items.forEach(r => {
+                        const li = document.createElement("li");
+                        li.className = "collection-item";
+                        li.innerHTML = `
+                <i class="material-icons left">description</i>
+                <span><strong>${r.flightName || "Unnamed Flight"}</strong></span><br>
+                Avg: ${r.avgSpeed} | Max: ${r.maxSpeed} | Duration: ${r.duration}s | Error: ${r.errorRate}%
+                <button class="btn-small red right" onclick="deleteReport('${r._id}')">
+                  <i class="material-icons">delete</i>
+                </button>
+              `;
+                        reportList.appendChild(li);
+                    });
+                } else {
+                    reportList.innerHTML = "<li class='collection-item'>No reports found.</li>";
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                reportList.innerHTML = "<li class='collection-item red-text'>Failed to load reports</li>";
+            });
+    }
+
+    // Start analysis via socket (only when flightId exists)
+    startBtn.addEventListener('click', () => {
+        if (!flightId || !userId) return;
+        statusDiv.className = "card-panel orange lighten-4";
+        statusDiv.textContent = "🚀 Analysis started...";
+        socket.emit('startAnalysis', { flightId, userId });
+
+        socket.on('analysisProgress', data => {
+            statusDiv.className = "card-panel blue lighten-4";
+            statusDiv.textContent = `⏳ ${data.message}`;
+        });
+
+        socket.on('analysisComplete', result => {
+            if (result.success) {
+                statusDiv.className = "card-panel green lighten-4";
+                statusDiv.textContent = "✅ Analysis Complete!";
+                loadReports(); // Refresh reports
+            } else {
+                statusDiv.className = "card-panel red lighten-4";
+                statusDiv.textContent = "❌ " + result.message;
+            }
+        });
+    });
+</script>
+</body>
+</html>

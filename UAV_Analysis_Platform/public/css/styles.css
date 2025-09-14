@@ -1,19 +1,19 @@
 /* UAV Performance Analysis Platform - Minimal Custom Styles */
 
-/* 只添加必要的自定义样式，不覆盖Materialize */
+/* Only add necessary custom styles, keep Materialize defaults */
 
-/* 简单的动画效果 */
+/* Floating animation */
 @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-15px); }
 }
 
-/* 让drone图标有浮动效果 */
+/* Floating effect for drone icon */
 .hero-image .material-symbols-outlined {
     animation: float 3s ease-in-out infinite;
 }
 
-/* 简单的3D容器样式 */
+/* 3D container */
 #three-container {
     width: 100%;
     height: 500px;
@@ -22,12 +22,12 @@
     background: #f8f9fa;
 }
 
-/* 隐藏元素的实用类 */
+/* Utility: hide element */
 .hidden {
     display: none !important;
 }
 
-/* 加载动画 */
+/* Loading spinner */
 .loading {
     display: inline-block;
     width: 20px;
@@ -41,5 +41,3 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-
-/* 就这些，其他都用Materialize默认样式 */

@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>UAV Performance Analysis Platform</title>
-    <meta name="description" content="MEC-enabled UAV delivery system analysis platform">
+    <title>UAV Analysis Platform</title>
+    <meta name="description" content="UAV flight data analysis and visualization platform">
     <meta name="author" content="UAV Research Team">
 
     <!-- Compiled and minified CSS -->
@@ -24,10 +24,7 @@
             <span class="material-symbols-outlined" style="font-size: 2rem; margin-right: 10px;" aria-hidden="true">drone</span>UAV Analysis
         </a>
         <ul id="nav-mobile" class="right hide-on-med-and-down">
-            <li><a href="#data">Data Upload</a></li>
-            <li><a href="#analysis">Analysis</a></li>
-            <li><a href="#visualization">Visualization</a></li>
-            <li><a href="#reports">Reports</a></li>
+            <!-- Navigation items will be dynamically populated by JavaScript -->
         </ul>
     </div>
 </nav>
@@ -38,182 +35,151 @@
         <!-- Hero Section -->
         <section class="row" aria-labelledby="hero-heading">
             <div class="col s12 center-align hero-section">
-                <h1 id="hero-heading">UAV Performance Analysis & Visualization Platform</h1>
+                <h1 id="hero-heading">UAV Flight Data Analysis Platform</h1>
                 <p class="flow-text">
-                    Comprehensive analysis tools for MEC-enabled autonomous UAV delivery systems,
-                    helping researchers understand network degradation impact on UAV flight performance
+                    Professional flight data processing and analysis tools for UAV performance evaluation.
+                    Upload your flight data, analyze trajectory patterns, and visualize results in interactive 3D.
                 </p>
                 <div class="hero-image center-align" aria-hidden="true">
                     <span class="material-symbols-outlined" style="font-size: 8rem; color: #333; margin: 30px 0; animation: float 3s ease-in-out infinite;">drone_2</span>
                 </div>
-                <button class="waves-effect waves-light btn-large teal modal-trigger" data-target="demoModal" aria-describedby="demo-description">
-                    <i class="material-icons left" aria-hidden="true">play_arrow</i>Start Analysis
-                </button>
-                <p id="demo-description" class="sr-only">Opens demonstration modal with platform features overview</p>
+                <a href="#" id="dashboard-btn" class="waves-effect waves-light btn-large teal" aria-describedby="start-description" style="display: none;">
+                    <i class="material-icons left" aria-hidden="true">dashboard</i>Go to Dashboard
+                </a>
+                <a href="/login" id="login-btn" class="waves-effect waves-light btn-large teal" aria-describedby="login-description">
+                    <i class="material-icons left" aria-hidden="true">login</i>Login to Continue
+                </a>
+                <p id="start-description" class="sr-only">Access the main dashboard to manage your flight data</p>
+                <p id="login-description" class="sr-only">Login to access the platform features</p>
             </div>
         </section>
 
         <!-- Feature Cards -->
         <section class="row" id="feature-section" aria-labelledby="features-heading">
             <div class="col s12 center-align">
-                <h2 id="features-heading" class="section-title">Platform Core Features</h2>
+                <h2 id="features-heading" class="section-title">Platform Features</h2>
             </div>
         </section>
         <div class="row" id="card-section">
-            <!-- Feature cards will be dynamically populated by JavaScript -->
             <div class="col s12 m6 l4">
                 <div class="card feature-card">
                     <div class="card-content">
-                            <span class="card-title">
-                                <i class="material-icons left" aria-hidden="true">cloud_upload</i>Data Processing
-                            </span>
-                        <p>Advanced UAV flight data processing with real-time validation and error detection capabilities.</p>
+                        <span class="card-title">
+                            <i class="material-icons left" aria-hidden="true">flight_takeoff</i>Flight Data Management
+                        </span>
+                        <p>Upload and organize your UAV flight data with comprehensive validation and error detection.</p>
                     </div>
                 </div>
             </div>
             <div class="col s12 m6 l4">
                 <div class="card feature-card">
                     <div class="card-content">
-                            <span class="card-title">
-                                <i class="material-icons left" aria-hidden="true">analytics</i>Network Analysis
-                            </span>
-                        <p>Comprehensive network quality assessment and correlation with flight performance metrics.</p>
+                        <span class="card-title">
+                            <i class="material-icons left" aria-hidden="true">analytics</i>Performance Analysis
+                        </span>
+                        <p>Detailed trajectory analysis including accuracy metrics, path efficiency, and flight statistics.</p>
                     </div>
                 </div>
             </div>
             <div class="col s12 m6 l4">
                 <div class="card feature-card">
                     <div class="card-content">
-                            <span class="card-title">
-                                <i class="material-icons left" aria-hidden="true">3d_rotation</i>3D Visualization
-                            </span>
-                        <p>Interactive 3D trajectory visualization with network overlays and error indicators.</p>
+                        <span class="card-title">
+                            <i class="material-icons left" aria-hidden="true">3d_rotation</i>3D Visualization
+                        </span>
+                        <p>Interactive 3D trajectory visualization with error indicators and flight path reconstruction.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Data Upload Section -->
-        <section class="row" id="data" aria-labelledby="upload-heading">
+        <!-- Getting Started Section -->
+        <section class="row" id="getting-started" aria-labelledby="start-heading">
             <div class="col s12">
                 <div class="card">
                     <div class="card-content">
-                            <span class="card-title" id="upload-heading">
-                                <i class="material-icons left" aria-hidden="true">cloud_upload</i>Experimental Data Upload
-                            </span>
-                        <p>Upload your UAV flight data for network degradation analysis</p>
-                        <form id="upload-form" enctype="multipart/form-data">
-                            <div class="file-field input-field">
-                                <div class="btn teal">
-                                    <span>Choose Files</span>
-                                    <input type="file" multiple accept=".json,.csv,.txt" aria-describedby="file-help">
+                        <span class="card-title" id="start-heading">
+                            <i class="material-icons left" aria-hidden="true">rocket_launch</i>Getting Started
+                        </span>
+                        <div class="row">
+                            <div class="col s12 m6 l3">
+                                <div class="center-align">
+                                    <i class="material-icons large teal-text">person_add</i>
+                                    <h5>1. Create Account</h5>
+                                    <p>Register for a new account to access all platform features</p>
+                                    <a href="/register" id="register-step-btn" class="btn teal">Register Now</a>
+                                    <a href="#" id="dashboard-step-btn" class="btn teal" style="display: none;">Go to Dashboard</a>
                                 </div>
-                                <div class="file-path-wrapper">
-                                    <input class="file-path validate" type="text" placeholder="Supports .csv, .json, .txt formats" readonly>
-                                </div>
-                                <div id="file-help" class="helper-text">Maximum file size: 50MB. JSON format preferred for optimal processing.</div>
                             </div>
-                            <button type="submit" class="waves-effect waves-light btn teal" id="uploadBtn">
-                                <i class="material-icons left" aria-hidden="true">send</i>Start Analysis
-                            </button>
-                        </form>
+                            <div class="col s12 m6 l3">
+                                <div class="center-align">
+                                    <i class="material-icons large orange-text">upload_file</i>
+                                    <h5>2. Upload Data</h5>
+                                    <p>Upload your JSON flight data files through the dashboard</p>
+                                    <a href="/login" id="upload-step-btn" class="btn orange disabled">Login Required</a>
+                                </div>
+                            </div>
+                            <div class="col s12 m6 l3">
+                                <div class="center-align">
+                                    <i class="material-icons large green-text">bar_chart</i>
+                                    <h5>3. Analyze Results</h5>
+                                    <p>View detailed analysis and performance metrics</p>
+                                    <a href="/login" id="analysis-step-btn" class="btn green disabled">Login Required</a>
+                                </div>
+                            </div>
+                            <div class="col s12 m6 l3">
+                                <div class="center-align">
+                                    <i class="material-icons large purple-text">3d_rotation</i>
+                                    <h5>4. Visualization</h5>
+                                    <p>Interactive 3D trajectory visualization and playback</p>
+                                    <a href="/login" id="visualization-step-btn" class="btn purple disabled">Login Required</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Analysis Dashboard -->
-        <section class="row" id="analysis" aria-labelledby="dashboard-heading">
+        <!-- About Section -->
+        <section class="row" id="about" aria-labelledby="about-heading">
             <div class="col s12">
                 <div class="card">
                     <div class="card-content">
-                            <span class="card-title" id="dashboard-heading">
-                                <i class="material-icons left" aria-hidden="true">analytics</i>Real-time Analysis Dashboard
-                            </span>
+                        <span class="card-title" id="about-heading">
+                            <i class="material-icons left" aria-hidden="true">info</i>About the Platform
+                        </span>
+                        <p>
+                            This UAV Analysis Platform provides comprehensive tools for processing and analyzing unmanned aerial vehicle flight data.
+                            The platform supports JSON data format and offers detailed trajectory analysis, accuracy measurements,
+                            and interactive 3D visualizations to help researchers and engineers understand UAV performance characteristics.
+                        </p>
                         <div class="row">
                             <div class="col s12 m6">
-                                <div class="card-panel teal lighten-4">
-                                    <h3>Network Quality</h3>
-                                    <div class="progress" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Network quality percentage">
-                                        <div class="determinate" style="width: 70%"></div>
-                                    </div>
-                                    <p>Signal Strength: <strong>70%</strong></p>
-                                </div>
+                                <h6><i class="material-icons tiny">check</i> Supported Features:</h6>
+                                <ul>
+                                    <li>JSON flight data processing</li>
+                                    <li>Trajectory accuracy analysis</li>
+                                    <li>Interactive 3D visualization</li>
+                                    <li>Performance metrics calculation</li>
+                                    <li>Flight data management</li>
+                                </ul>
                             </div>
                             <div class="col s12 m6">
-                                <div class="card-panel orange lighten-4">
-                                    <h3>Flight Accuracy</h3>
-                                    <div class="progress" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-label="Flight accuracy percentage">
-                                        <div class="determinate" style="width: 85%"></div>
-                                    </div>
-                                    <p>Positioning Error: <strong>15cm</strong></p>
-                                </div>
+                                <h6><i class="material-icons tiny">storage</i> Data Requirements:</h6>
+                                <ul>
+                                    <li>JSON format with position data</li>
+                                    <li>Timestamp information</li>
+                                    <li>X, Y, Z coordinates</li>
+                                    <li>Optional: target positions</li>
+                                    <li>Optional: phase information</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- 3D Visualization Section -->
-        <section class="row" id="visualization" aria-labelledby="viz-heading">
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                            <span class="card-title" id="viz-heading">
-                                <i class="material-icons left" aria-hidden="true">3d_rotation</i>3D Flight Trajectory Visualization
-                            </span>
-                        <div class="center-align">
-                            <div class="visualization-placeholder" role="img" aria-label="3D visualization placeholder">
-                                <i class="material-icons large" aria-hidden="true">timeline</i>
-                                <p>Interactive 3D trajectory visualization will be displayed here</p>
-                                <button class="waves-effect waves-light btn teal" id="load3DBtn">
-                                    <i class="material-icons left" aria-hidden="true">view_in_ar</i>Load 3D View
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Demo Modal -->
-    <div id="demoModal" class="modal modal-fixed-footer" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
-        <div class="modal-content">
-            <h4 id="modal-title">UAV Analysis Demo</h4>
-            <p>Welcome to the UAV Performance Analysis Platform! This demo will guide you through the key features:</p>
-            <div class="row">
-                <div class="col s12">
-                    <ul class="collection">
-                        <li class="collection-item avatar">
-                            <i class="material-icons circle teal" aria-hidden="true">flight_takeoff</i>
-                            <span class="title">Data Upload</span>
-                            <p>Upload experimental flight data from Crazyflie drones<br>
-                                Supports multiple formats and batch processing
-                            </p>
-                        </li>
-                        <li class="collection-item avatar">
-                            <i class="material-icons circle orange" aria-hidden="true">trending_up</i>
-                            <span class="title">Network Analysis</span>
-                            <p>Analyze correlation between network conditions and flight accuracy<br>
-                                Real-time monitoring of connectivity metrics
-                            </p>
-                        </li>
-                        <li class="collection-item avatar">
-                            <i class="material-icons circle green" aria-hidden="true">3d_rotation</i>
-                            <span class="title">3D Visualization</span>
-                            <p>Interactive 3D trajectory reconstruction<br>
-                                Network quality overlays and error analysis
-                            </p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-close waves-effect waves-teal btn-flat">Got it!</button>
-        </div>
     </div>
 </main>
 
@@ -221,5 +187,102 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script src="js/scripts.js"></script>
+
+<script>
+    // Check authentication status and update UI accordingly
+    function checkAuthStatus() {
+        const token = localStorage.getItem('uav_token');
+        const navMobile = document.getElementById('nav-mobile');
+        const dashboardBtn = document.getElementById('dashboard-btn');
+        const loginBtn = document.getElementById('login-btn');
+
+        // Getting started section buttons
+        const registerStepBtn = document.getElementById('register-step-btn');
+        const dashboardStepBtn = document.getElementById('dashboard-step-btn');
+        const uploadStepBtn = document.getElementById('upload-step-btn');
+        const analysisStepBtn = document.getElementById('analysis-step-btn');
+        const visualizationStepBtn = document.getElementById('visualization-step-btn');
+
+        if (token) {
+            // User is logged in
+            navMobile.innerHTML = `
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/flights">Flights</a></li>
+                <li><a href="/analysis">Analysis</a></li>
+                <li><a href="javascript:void(0);" onclick="logout()">Logout</a></li>
+            `;
+
+            // Show dashboard button, hide login button
+            dashboardBtn.style.display = 'inline-block';
+            dashboardBtn.href = '/dashboard';
+            loginBtn.style.display = 'none';
+
+            // Update getting started section for logged in users
+            if (registerStepBtn) registerStepBtn.style.display = 'none';
+            if (dashboardStepBtn) {
+                dashboardStepBtn.style.display = 'inline-block';
+                dashboardStepBtn.href = '/dashboard';
+            }
+            if (uploadStepBtn) {
+                uploadStepBtn.textContent = 'Go to Dashboard';
+                uploadStepBtn.href = '/dashboard';
+                uploadStepBtn.classList.remove('disabled');
+                uploadStepBtn.classList.add('orange');
+            }
+            if (analysisStepBtn) {
+                analysisStepBtn.textContent = 'View Analysis';
+                analysisStepBtn.href = '/analysis';
+                analysisStepBtn.classList.remove('disabled');
+                analysisStepBtn.classList.add('green');
+            }
+            if (visualizationStepBtn) {
+                visualizationStepBtn.textContent = 'View Visualization';
+                visualizationStepBtn.href = '/visualization';
+                visualizationStepBtn.classList.remove('disabled');
+                visualizationStepBtn.classList.add('purple');
+            }
+        } else {
+            // User is not logged in
+            navMobile.innerHTML = `
+                <li><a href="/dashboard" onclick="requireLogin(event)">Dashboard</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+            `;
+
+            // Show login button, hide dashboard button
+            dashboardBtn.style.display = 'none';
+            loginBtn.style.display = 'inline-block';
+        }
+    }
+
+    // Logout function
+    function logout() {
+        localStorage.removeItem('uav_token');
+        localStorage.removeItem('token_timestamp');
+        M.toast({ html: 'Logged out successfully', classes: 'green' });
+
+        // Refresh the page to update UI
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    }
+
+    // Require login function for protected routes
+    function requireLogin(event) {
+        event.preventDefault();
+        M.toast({ html: 'Please login to access the dashboard', classes: 'orange' });
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkAuthStatus();
+
+        // Initialize Materialize components
+        M.AutoInit();
+    });
+</script>
 </body>
 </html>

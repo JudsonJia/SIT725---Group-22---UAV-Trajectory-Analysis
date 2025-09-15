@@ -112,6 +112,10 @@ app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'r
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
 });
+app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'profile.html'));
+});
+
 // Flights 页面
 app.get('/flights', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'flights.html'));
@@ -128,14 +132,20 @@ app.get('/analysis', (req, res) => {
 
 
 // Catch-all for SPA
-app.get('*', (req, res) => {
-    if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API endpoint not found' });
+app.use((req, res) => {
+    if (req.path.startsWith('/api/')) 
+        return res.status(404).json({ success: false, message: 'API endpoint not found' });
+
     const rootHtml = path.join(__dirname, 'index.html');
     const viewsHtml = path.join(__dirname, 'views', 'index.html');
+
     if (fs.existsSync(rootHtml)) return res.sendFile(rootHtml);
     if (fs.existsSync(viewsHtml)) return res.sendFile(viewsHtml);
+
     res.status(404).send('HTML file not found');
 });
+
+
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 

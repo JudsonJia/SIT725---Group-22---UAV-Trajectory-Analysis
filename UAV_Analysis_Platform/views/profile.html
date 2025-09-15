@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <!-- Materialize CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/profile.css">
+  <style>
+    body {
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .profile-card {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .profile-field {
+      margin-bottom: 1.5rem;
+    }
+    .update-btn {
+      margin-top: 0.5rem;
+    }
+    input:focus {
+      border-bottom: 1px solid #26a69a !important;
+      box-shadow: 0 1px 0 0 #26a69a !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-card z-depth-2">
+    <h4 class="center-align">User Profile</h4>
+
+    <!-- Username -->
+    <div class="profile-field">
+      <label>Username</label>
+      <p id="username">demo-user</p>
+      <button class="btn-small update-btn" id="updateUsername">Update Username</button>
+    </div>
+
+    <!-- Email -->
+    <div class="profile-field">
+      <label>Email</label>
+      <p id="email">demo@uav.com</p>
+      <button class="btn-small update-btn" id="updateEmail">Update Email</button>
+    </div>
+
+    <!-- Password Update -->
+    <div class="profile-field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="******">
+    </div>
+    <div class="profile-field">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password">
+    </div>
+    <button class="btn" id="updatePassword">Update Password</button>
+  </div>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    // Example click handlers
+    document.getElementById('updateUsername').addEventListener('click', () => {
+      alert('Update username functionality here');
+    });
+    document.getElementById('updateEmail').addEventListener('click', () => {
+      alert('Update email functionality here');
+    });
+    document.getElementById('updatePassword').addEventListener('click', () => {
+      const pw = document.getElementById('password').value;
+      const cpw = document.getElementById('confirmPassword').value;
+      if(pw && pw === cpw){
+        alert('Password updated!');
+      } else {
+        alert('Passwords do not match!');
+      }
+    });
+
+    // Password placeholder disappear on focus
+    const pwInput = document.getElementById('password');
+    pwInput.addEventListener('focus', () => {
+      pwInput.placeholder = '';
+    });
+  </script>
+</body>
+</html>

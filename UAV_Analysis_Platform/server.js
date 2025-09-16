@@ -32,7 +32,9 @@ if (process.env.NODE_ENV !== 'test') connectDB();
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' })); // parses form POST bodies
+app.use(cookieParser("super-secret-key")); // npm i cookie-parser
+
 
 // Static files
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -43,6 +45,41 @@ app.use('/api/auth', authRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/analysis', analysisRoutes);
+
+// --- login page
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "login.html"));
+});
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body || {};
+  if (username === "admin" && password === "admin123") {
+    res.cookie("auth", "1", { httpOnly: true, signed: true, sameSite: "lax" });
+    return res.redirect("/admin");
+  }
+  return res.redirect("/login");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("auth");
+  res.redirect("/login");
+});
+
+// --- middleware to check login ---
+function requireAuth(req, res, next) {
+  if (req.signedCookies && req.signedCookies.auth === "1") return next();
+  return res.redirect("/login");
+}
+
+
+app.get("/admin", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "AdminDashboard.html")); // no 'views' folder
+});
+
+// Serve the Admin Dashboard HTML
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "admin.html"));
+});
 
 // Health check
 app.get('/api/health', (req, res) => {

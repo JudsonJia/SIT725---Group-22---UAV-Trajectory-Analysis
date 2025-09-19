@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>UAV Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>body{background:linear-gradient(135deg,#ecfdf5,#ffffff 45%,#eff6ff)}</style>
+</head>
+<body class="min-h-screen">
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-bold text-emerald-700 flex items-center gap-2">
+        <i data-lucide="plane" class="w-5 h-5"></i> UAV Analysis — Admin
+      </h1>
+      <nav class="flex gap-2" id="tabs">
+        <button data-tab="users" class="tab px-3 py-1.5 rounded-full border bg-green-600 text-white border-green-600 shadow">Users</button>
+        <button data-tab="flights" class="tab px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 border-gray-200 text-gray-700">Flights</button>
+        <button data-tab="analysis" class="tab px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 border-gray-200 text-gray-700">Analysis & Reports</button>
+        <button data-tab="system" class="tab px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 border-gray-200 text-gray-700">System & Logs</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <!-- Users -->
+    <section id="panel-users" class="panel bg-white/90 border border-gray-100 rounded-2xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <i data-lucide="users" class="w-5 h-5 text-green-600"></i> Users
+        </h2>
+        <div class="flex gap-2">
+          <button id="btn-refresh-users" class="px-3 py-2 rounded-xl border flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
+          </button>
+          <button id="btn-new-user" class="px-3 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i> New User
+          </button>
+        </div>
+      </div>
+      <div class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <input id="user-q" class="w-full border rounded-xl px-3 py-2" placeholder="Search name/email">
+        <select id="user-role" class="w-full border rounded-xl px-3 py-2 bg-white">
+          <option value="">All roles</option><option>admin</option><option>analyst</option><option>viewer</option>
+        </select>
+        <select id="user-status" class="w-full border rounded-xl px-3 py-2 bg-white">
+          <option value="">All status</option><option>active</option><option>disabled</option>
+        </select>
+        <button id="btn-filter-users" class="px-3 py-2 rounded-xl border">Filter</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-500">
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Name</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Email</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Role</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Status</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Flights -->
+    <section id="panel-flights" class="panel hidden bg-white/90 border border-gray-100 rounded-2xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <i data-lucide="plane" class="w-5 h-5 text-emerald-600"></i> Flights
+        </h2>
+        <button id="btn-refresh-flights" class="px-3 py-2 rounded-xl border flex items-center gap-1">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <input id="flight-name" class="w-full border rounded-xl px-3 py-2" placeholder="Name (optional)">
+        <input id="flight-tags" class="w-full border rounded-xl px-3 py-2" placeholder="Tags (comma-separated)">
+        <button id="btn-upload-flight" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow flex items-center gap-1">
+          <i data-lucide="upload" class="w-4 h-4"></i> Upload JSON
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-500">
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Name</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Start</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Tags</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Records</th>
+              <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="flights-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Analysis -->
+    <section id="panel-analysis" class="panel hidden bg-white/90 border border-gray-100 rounded-2xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-600"></i> Analysis & Reports
+        </h2>
+        <button id="btn-run-analysis" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow">Run (0)</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-sm uppercase tracking-wide text-gray-500 mb-2">Flights</h3>
+          <div class="overflow-x-auto border rounded-xl">
+            <table class="min-w-full text-sm">
+              <thead><tr class="text-left text-gray-500">
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Pick</th>
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Name</th>
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Start</th>
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Tags</th>
+              </tr></thead>
+              <tbody id="analysis-flights"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm uppercase tracking-wide text-gray-500 mb-2">Reports</h3>
+          <div class="overflow-x-auto border rounded-xl">
+            <table class="min-w-full text-sm">
+              <thead><tr class="text-left text-gray-500">
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Flight</th>
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Created</th>
+                <th class="py-2 pr-6 font-medium uppercase tracking-wide text-xs">Metrics</th>
+              </tr></thead>
+              <tbody id="reports-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- System -->
+    <section id="panel-system" class="panel hidden bg-white/90 border border-gray-100 rounded-2xl shadow-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <i data-lucide="server" class="w-5 h-5 text-emerald-600"></i> System & Logs
+        </h2>
+        <button id="btn-refresh-system" class="px-3 py-2 rounded-xl border flex items-center gap-1">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
+        </button>
+      </div>
+      <div id="system-stats" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-6"></div>
+      <div>
+        <h3 class="text-sm uppercase tracking-wide text-gray-500 mb-2">Logs</h3>
+        <div class="max-h-64 overflow-auto text-sm font-mono bg-gray-50 rounded-xl border p-3" id="logs-box"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    const $ = (s, root=document) => root.querySelector(s);
+    const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
+    const fmt = (d) => new Date(d).toLocaleString();
+
+    // dummy in-memory data for demo
+    const db = {
+      users: [
+        { _id: "u1", name: "Lynn", email: "lyego@gmail.com", role: "admin", status: "active" },
+        { _id: "u2", name: "Disen", email: "disenj@gmail.com", role: "analyst", status: "active" },
+        { _id: "u3", name: "Xueiying", email: "xueiyingf@gmail.com", role: "viewer", status: "active" },
+        { _id: "u4", name: "Semoi", email: "semoim@gmail.com", role: "viewer", status: "disable" }
+      ],
+      flights: [
+        { _id: "f1", name: "Test Flight 1", tags: ["lab"], startedAt: "2025-05-13T09:00:00Z", records: 431 },
+        { _id: "f2", name: "Test Flight 2", tags: ["field","rf"], startedAt: "2025-05-14T00:00:00Z", records: 298 },
+      ],
+      reports: [
+        { _id: "r1", flightId: "f1", createdAt: "2025-06-02T01:10:00Z", metrics: { distance: 430, durationSec: 120, anomalies: 0 } },
+      ],
+      logs: [{ ts: new Date().toISOString(), level: "info", msg: "Mock system ready" }],
+      started: Date.now(),
+    };
+
+    // tabs
+    $$("#tabs .tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        $$("#tabs .tab").forEach(b => b.classList.remove("bg-green-600","text-white","border-green-600","shadow"));
+        btn.classList.add("bg-green-600","text-white","border-green-600","shadow");
+        const tab = btn.dataset.tab;
+        $$(".panel").forEach(p => p.classList.add("hidden"));
+        $("#panel-" + tab).classList.remove("hidden");
+      });
+    });
+
+    // renderers
+    function renderUsers(list) {
+      const tbody = $("#users-body"); tbody.innerHTML = "";
+      list.forEach((u,i) => {
+        const tr = document.createElement("tr");
+        tr.className = `${i%2?"bg-white":"bg-gray-50"} hover:bg-emerald-50/50`;
+        tr.innerHTML = `
+          <td class="py-2 pr-6">${u.name}</td>
+          <td class="py-2 pr-6">${u.email}</td>
+          <td class="py-2 pr-6">
+            <select class="border rounded-xl px-2 py-1">
+              <option ${u.role==="admin"?"selected":""}>admin</option>
+              <option ${u.role==="analyst"?"selected":""}>analyst</option>
+              <option ${u.role==="viewer"?"selected":""}>viewer</option>
+            </select>
+          </td>
+          <td class="py-2 pr-6">
+            <select class="border rounded-xl px-2 py-1">
+              <option ${u.status==="active"?"selected":""}>active</option>
+              <option ${u.status==="disabled"?"selected":""}>disabled</option>
+            </select>
+          </td>
+          <td class="py-2 pr-6">
+            <button class="px-3 py-1.5 rounded-xl border mr-2">Reset</button>
+            <button class="px-3 py-1.5 rounded-xl border text-red-600 hover:bg-red-50">Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    function renderFlights(list) {
+      const tbody = $("#flights-body"); tbody.innerHTML = "";
+      list.forEach((f,i) => {
+        const tags = (f.tags||[]).map(t=>`<span class="px-2 py-0.5 text-xs bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full">${t}</span>`).join(" ");
+        const tr = document.createElement("tr");
+        tr.className = `${i%2?"bg-white":"bg-gray-50"} hover:bg-emerald-50/50`;
+        tr.innerHTML = `
+          <td class="py-2 pr-6">${f.name}</td>
+          <td class="py-2 pr-6">${fmt(f.startedAt)}</td>
+          <td class="py-2 pr-6">${tags} <button class="text-xs underline text-gray-600 ml-2">edit</button></td>
+          <td class="py-2 pr-6">${f.records}</td>
+          <td class="py-2 pr-6"><button class="px-3 py-1.5 rounded-xl border text-red-600 hover:bg-red-50">Delete</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    function renderAnalysis() {
+      const tbody = $("#analysis-flights"); tbody.innerHTML = "";
+      db.flights.forEach((f,i) => {
+        const tags = (f.tags||[]).map(t=>`<span class="px-2 py-0.5 text-xs bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full">${t}</span>`).join(" ");
+        const tr = document.createElement("tr");
+        tr.className = `${i%2?"bg-white":"bg-gray-50"} hover:bg-emerald-50/50`;
+        tr.innerHTML = `
+          <td class="py-2 pr-6"><input type="checkbox" class="pick-flight" data-id="${f._id}"></td>
+          <td class="py-2 pr-6">${f.name}</td>
+          <td class="py-2 pr-6">${fmt(f.startedAt)}</td>
+          <td class="py-2 pr-6">${tags}</td>`;
+        tbody.appendChild(tr);
+      });
+      const rbody = $("#reports-body"); rbody.innerHTML = "";
+      db.reports.forEach((r,i) => {
+        const tr = document.createElement("tr");
+        tr.className = `${i%2?"bg-white":"bg-gray-50"} hover:bg-emerald-50/50`;
+        tr.innerHTML = `
+          <td class="py-2 pr-6">${r.flightId}</td>
+          <td class="py-2 pr-6">${fmt(r.createdAt)}</td>
+          <td class="py-2 pr-6 text-xs">
+            <div class="grid grid-cols-3 gap-2">
+              <div><span class="text-gray-500">distance</span> <b>${r.metrics.distance}</b></div>
+              <div><span class="text-gray-500">duration(s)</span> <b>${r.metrics.durationSec}</b></div>
+              <div><span class="text-gray-500">anomalies</span> <b>${r.metrics.anomalies}</b></div>
+            </div>
+          </td>`;
+        rbody.appendChild(tr);
+      });
+      updateRunButton();
+    }
+    function renderSystem() {
+      const uptimeSec = Math.round((Date.now() - db.started) / 1000);
+      const stats = { users: db.users.length, flights: db.flights.length, reports: db.reports.length };
+      $("#system-stats").innerHTML = `
+        <div class="p-4 rounded-xl border bg-gradient-to-br from-emerald-50 to-white"><div class="text-gray-500">Uptime</div><div class="text-lg font-semibold">${uptimeSec}s</div></div>
+        <div class="p-4 rounded-xl border bg-gradient-to-br from-emerald-50 to-white"><div class="text-gray-500">Database</div><div class="text-lg font-semibold">mock</div></div>
+        <div class="p-4 rounded-xl border bg-gradient-to-br from-emerald-50 to-white"><div class="text-gray-500">Now</div><div class="text-lg font-semibold">${fmt(new Date())}</div></div>
+      `;
+      $("#logs-box").innerHTML = db.logs.map(l =>
+        `<div class="py-1"><span class="text-gray-500">[${new Date(l.ts).toLocaleTimeString()}]</span> <span class="px-2 py-0.5 text-xs bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full">${l.level}</span> ${l.msg}</div>`
+      ).join("");
+    }
+    function updateRunButton() {
+      const selected = $$(".pick-flight:checked").length;
+      $("#btn-run-analysis").textContent = `Run (${selected})`;
+    }
+
+    // init
+    renderUsers(db.users);
+    renderFlights(db.flights);
+    renderAnalysis();
+    renderSystem();
+    document.addEventListener("change", (e) => { if (e.target.classList.contains("pick-flight")) updateRunButton(); });
+
+    // controls
+    $("#btn-refresh-users").onclick = () => renderUsers(db.users);
+    $("#btn-filter-users").onclick = () => {
+      const q = $("#user-q").value.trim().toLowerCase();
+      const role = $("#user-role").value; const status = $("#user-status").value;
+      const filtered = db.users.filter(u =>
+        (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)) &&
+        (!role || u.role === role) && (!status || u.status === status)
+      );
+      renderUsers(filtered);
+    };
+    $("#btn-new-user").onclick = () => {
+      const name = prompt("Name?"); if (!name) return;
+      const email = prompt("Email?"); if (!email) return;
+      db.users.unshift({ _id: "u"+Date.now(), name, email, role: "analyst", status: "active" });
+      renderUsers(db.users);
+    };
+    $("#btn-refresh-flights").onclick = () => renderFlights(db.flights);
+    $("#btn-upload-flight").onclick = () => {
+      const name = $("#flight-name").value || `flight_${Date.now()}`;
+      const tags = $("#flight-tags").value.split(",").map(s=>s.trim()).filter(Boolean);
+      db.flights.unshift({ _id: "f"+Date.now(), name, tags, startedAt: new Date().toISOString(), records: 0 });
+      $("#flight-name").value = ""; $("#flight-tags").value = "";
+      renderFlights(db.flights); renderAnalysis();
+    };
+    $("#btn-run-analysis").onclick = () => {
+      const ids = $$(".pick-flight:checked").map(c => c.dataset.id);
+      const created = ids.map((id,i)=>({ _id:`r${Date.now()}_${i}`, flightId:id, createdAt:new Date().toISOString(), metrics:{ distance:100, durationSec:60, anomalies:0 }}));
+      db.reports.unshift(...created); renderAnalysis();
+      alert(`Created ${created.length} report(s).`);
+    };
+    $("#btn-refresh-system").onclick = () => renderSystem();
+  </script>
+</body>
+</html>
+

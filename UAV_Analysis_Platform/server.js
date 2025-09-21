@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/database');
 const FlightData = require('./models/FlightData');
@@ -34,7 +35,9 @@ app.use(cookieParser());
 app.use(cookieParser(process.env.COOKIE_SECRET || 'uav-cookie-secret')); // add signed cookies (needed by admin mock login)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' })); // parses form POST bodies
-app.use(cookieParser("super-secret-key")); // npm i cookie-parser
+
+app.use(cookieParser('super-secret-key')); // <-- MUST have a secret for signed cookies
+app.use(express.urlencoded({ extended: true })); // ensure form posts work
 
 
 // Static files
@@ -71,7 +74,11 @@ function requireAuth(req, res, next) {
   if (req.signedCookies && req.signedCookies.auth === "1") return next();
   return res.redirect("/login");
 }
-
+// Quick test (leave during setup; remove later)
+app.get('/admin-unprotected', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'AdminDashboard.html'));
+});
+// Protected admin page
 
 app.get("/admin", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "AdminDashboard.html")); // no 'views' folder
@@ -127,43 +134,63 @@ app.get('/analysis', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'analysis.html'));
 });
 
-// ================== ADMIN DASHBOARD INTEGRATION (added) ==================
 
-// Tiny auth guard for admin page (dev-friendly)
-function requireAdminDev(req, res, next) {
-  // quick bypass while developing: /admin?dev=1
-  if (req.query && req.query.dev === '1') return next();
+// ================== ADMIN LOGIN (JWT-based) ==================
+app.post('/api/auth/admin-login', (req, res) => {
+  const { email, password } = req.body || {};
 
-  // accept JWT (header/cookie) or signed cookie "auth=1" (from the mock login form)
-  const authHeader = req.headers.authorization || '';
-  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const jwtToken = bearerToken || req.cookies?.token;
-  const cookieAuth = req.signedCookies && req.signedCookies.auth === '1';
+  // Simple demo check – replace with DB lookup if needed
+    if (email === 'admin@uav.com' && password === 'admin123') {
+    const token = jwt.sign(
+      { userId: 'admin-user-id', username: 'admin', role: 'admin' },
+      process.env.JWT_SECRET || 'uav-secret-key',
+      { expiresIn: '7d' }
+    );
 
-  if (jwtToken || cookieAuth) return next();
-  return res.redirect('/login');
+     // Set both JSON response and httpOnly cookie so browser requests can be protected without client JS.
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // set true if you use HTTPS
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    return res.json({ success: true, token, role: 'admin' });
+  }
+
+  return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+});
+
+
+// Protect /admin with JWT (admins only)
+function requireAdminJWT(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const bearer = authHeader && authHeader.split(' ')[1];
+  const fromCookie = req.cookies && req.cookies.authToken;
+  const token = bearer || fromCookie;
+
+  if (!token) {
+    // Not logged in – send to login page for browser,
+    // or JSON for API callers.
+    if (req.accepts('html')) return res.redirect('/login');
+    return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || 'uav-secret-key', (err, decoded) => {
+    if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admins only' });
+    }
+    req.user = decoded;
+    next();
+  });
 }
 
-// Admin pages (place BEFORE catch-all)
-app.get('/admin', requireAdminDev, (req, res) => {
+
+// Admin dashboard route
+app.get('/admin', requireAdminJWT, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'AdminDashboard.html'));
 });
-
-// Unprotected shortcut for quick UI test (no auth)
-app.get('/admin-unprotected', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'AdminDashboard.html'));
-});
-
-// Optional: lightweight mock login form handler for signed cookie (doesn't conflict with /api/auth/*)
-app.post('/admin/mock-login', (req, res) => {
-  const { username, password } = req.body || {};
-  if (username === 'admin' && password === 'admin123') {
-    res.cookie('auth', '1', { httpOnly: true, signed: true, sameSite: 'lax' });
-    return res.redirect('/admin');
-  }
-  return res.redirect('/login');
-});
-
 // -------- MOCK DATA (isolated, no DB) --------
 let mockUsers = [
   { id: 1, name: "Alice Carter", email: "alice@example.com", role: "admin",  status: "active" },
@@ -271,6 +298,24 @@ registerMockUserRoutes('/api/admin');   // friendly alias
 registerMockFlightRoutes('/api/mock');
 registerMockFlightRoutes('/api/admin'); // friendly alias
 
+// ================== VIEWS (add admin + login here) ==================
+
+// quick test route (no login needed)
+app.get('/admin-unprotected', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'AdminDashboard.html'));
+});
+
+// protected route (after login)
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'AdminDashboard.html'));
+});
+
+// login page
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+// ================== END VIEWS ==================
 
 
 // Catch-all for SPA

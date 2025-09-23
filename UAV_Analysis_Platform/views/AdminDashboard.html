@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - UAV Analysis Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #26a69a, #00695c);
+            color: white;
+            padding: 20px 0;
+        }
+        .user-card {
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-suspended {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        .status-disabled {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .role-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .role-admin {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .role-analyst {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .role-viewer {
+            background-color: #f1f8e9;
+            color: #388e3c;
+        }
+        .search-box {
+            margin: 20px 0;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body class="grey lighten-4">
+
+<!-- Header -->
+<div class="admin-header">
+    <div class="container">
+        <div class="row valign-wrapper">
+            <div class="col s6">
+                <h4 class="no-margin">
+                    <i class="material-icons left">security</i>
+                    Admin Dashboard
+                </h4>
+                <p class="no-margin opacity-80">User Management</p>
+            </div>
+            <div class="col s6 right-align">
+                <button id="logout-btn" class="btn red waves-effect waves-light">
+                    <i class="material-icons left">exit_to_app</i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container" style="margin-top: 30px;">
+
+    <!-- Controls -->
+    <div class="card">
+        <div class="card-content">
+            <div class="row">
+                <div class="col s12 m6">
+                    <div class="input-field">
+                        <i class="material-icons prefix">search</i>
+                        <input type="text" id="search-input" placeholder="Search users by name or email">
+                        <label for="search-input">Search Users</label>
+                    </div>
+                </div>
+                <div class="col s12 m3">
+                    <div class="input-field">
+                        <select id="role-filter">
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="analyst">Analyst</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                        <label>Filter by Role</label>
+                    </div>
+                </div>
+                <div class="col s12 m3">
+                    <div class="input-field">
+                        <select id="status-filter">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                        <label>Filter by Status</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <button id="add-user-btn" class="btn green waves-effect waves-light">
+                        <i class="material-icons left">person_add</i>
+                        Add New User
+                    </button>
+                    <button id="refresh-btn" class="btn blue waves-effect waves-light">
+                        <i class="material-icons left">refresh</i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-teal-only">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+        <p>Loading users...</p>
+    </div>
+
+    <!-- Users List -->
+    <div id="users-container">
+        <!-- Users will be populated here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="card" style="display: none;">
+        <div class="card-content center-align">
+            <i class="material-icons large grey-text">people_outline</i>
+            <h5>No users found</h5>
+            <p>Try adjusting your search filters or add a new user.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div id="user-modal" class="modal">
+    <div class="modal-content">
+        <h4 id="modal-title">Add New User</h4>
+        <form id="user-form">
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="user-name" type="text" class="validate" required>
+                    <label for="user-name">Full Name *</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="user-email" type="email" class="validate" required>
+                    <label for="user-email">Email Address *</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s6">
+                    <select id="user-role" required>
+                        <option value="" disabled selected>Choose role</option>
+                        <option value="admin">Admin</option>
+                        <option value="analyst">Analyst</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                    <label>Role *</label>
+                </div>
+                <div class="input-field col s6">
+                    <select id="user-status" required>
+                        <option value="" disabled selected>Choose status</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                    <label>Status *</label>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="modal-close waves-effect waves-red btn-flat">Cancel</button>
+        <button id="save-user-btn" class="waves-effect waves-green btn green">Save User</button>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize Materialize components
+        M.AutoInit();
+
+        let users = [];
+        let editingUserId = null;
+
+        // Load users on page load
+        loadUsers();
+
+        // Event listeners
+        $('#logout-btn').click(logout);
+        $('#refresh-btn').click(loadUsers);
+        $('#add-user-btn').click(showAddUserModal);
+        $('#save-user-btn').click(saveUser);
+        $('#search-input').on('input', filterUsers);
+        $('#role-filter').change(filterUsers);
+        $('#status-filter').change(filterUsers);
+
+        // Load users from server
+        function loadUsers() {
+            $('#loading').show();
+            $('#users-container').empty();
+            $('#empty-state').hide();
+
+            fetch('/api/admin/users')
+                .then(response => response.json())
+                .then(data => {
+                    users = data;
+                    displayUsers(users);
+                    $('#loading').hide();
+                })
+                .catch(error => {
+                    console.error('Error loading users:', error);
+                    M.toast({html: 'Failed to load users', classes: 'red'});
+                    $('#loading').hide();
+                });
+        }
+
+        // Display users in the UI
+        function displayUsers(userList) {
+            const container = $('#users-container');
+            container.empty();
+
+            if (userList.length === 0) {
+                $('#empty-state').show();
+                return;
+            }
+
+            $('#empty-state').hide();
+
+            userList.forEach(user => {
+                const userCard = createUserCard(user);
+                container.append(userCard);
+            });
+        }
+
+        // Create user card HTML
+        function createUserCard(user) {
+            const statusClass = `status-${user.status}`;
+            const roleClass = `role-${user.role}`;
+
+            return `
+            <div class="card user-card">
+                <div class="card-content">
+                    <div class="row valign-wrapper" style="margin-bottom: 0;">
+                        <div class="col s8">
+                            <h6 style="margin: 0; font-weight: 500;">${user.name}</h6>
+                            <p style="margin: 5px 0; color: #666;">${user.email}</p>
+                            <span class="role-badge ${roleClass}">${user.role}</span>
+                            <span class="status-badge ${statusClass}" style="margin-left: 10px;">${user.status}</span>
+                        </div>
+                        <div class="col s4 right-align">
+                            <button class="btn-small blue waves-effect waves-light" onclick="editUser(${user.id})">
+                                <i class="material-icons">edit</i>
+                            </button>
+                            <button class="btn-small red waves-effect waves-light" onclick="deleteUser(${user.id}, '${user.name}')" style="margin-left: 5px;">
+                                <i class="material-icons">delete</i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        }
+
+        // Filter users based on search and filters
+        function filterUsers() {
+            const searchTerm = $('#search-input').val().toLowerCase();
+            const roleFilter = $('#role-filter').val();
+            const statusFilter = $('#status-filter').val();
+
+            const filteredUsers = users.filter(user => {
+                const matchesSearch = user.name.toLowerCase().includes(searchTerm) ||
+                    user.email.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                const matchesStatus = !statusFilter || user.status === statusFilter;
+
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+
+            displayUsers(filteredUsers);
+        }
+
+        // Show add user modal
+        function showAddUserModal() {
+            editingUserId = null;
+            $('#modal-title').text('Add New User');
+            $('#user-form')[0].reset();
+            $('#user-modal').modal('open');
+            M.updateTextFields();
+            M.FormSelect.init(document.querySelectorAll('select'));
+        }
+
+        // Edit user
+        window.editUser = function(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            editingUserId = userId;
+            $('#modal-title').text('Edit User');
+            $('#user-name').val(user.name);
+            $('#user-email').val(user.email);
+            $('#user-role').val(user.role);
+            $('#user-status').val(user.status);
+
+            M.updateTextFields();
+            M.FormSelect.init(document.querySelectorAll('select'));
+            $('#user-modal').modal('open');
+        };
+
+        // Save user (add or update)
+        function saveUser() {
+            const userData = {
+                name: $('#user-name').val(),
+                email: $('#user-email').val(),
+                role: $('#user-role').val(),
+                status: $('#user-status').val()
+            };
+
+            // Basic validation
+            if (!userData.name || !userData.email || !userData.role || !userData.status) {
+                M.toast({html: 'Please fill in all required fields', classes: 'red'});
+                return;
+            }
+
+            const url = editingUserId ? `/api/admin/users/${editingUserId}` : '/api/admin/users';
+            const method = editingUserId ? 'PATCH' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        M.toast({html: data.error, classes: 'red'});
+                    } else {
+                        M.toast({html: editingUserId ? 'User updated successfully' : 'User added successfully', classes: 'green'});
+                        $('#user-modal').modal('close');
+                        loadUsers();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving user:', error);
+                    M.toast({html: 'Failed to save user', classes: 'red'});
+                });
+        }
+
+        // Delete user
+        window.deleteUser = function(userId, userName) {
+            if (!confirm(`Are you sure you want to delete user "${userName}"?`)) {
+                return;
+            }
+
+            fetch(`/api/admin/users/${userId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        M.toast({html: data.error, classes: 'red'});
+                    } else {
+                        M.toast({html: 'User deleted successfully', classes: 'green'});
+                        loadUsers();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting user:', error);
+                    M.toast({html: 'Failed to delete user', classes: 'red'});
+                });
+        };
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear admin token
+                localStorage.removeItem('adminToken');
+
+                // Call server logout
+                fetch('/api/auth/logout', { method: 'POST' })
+                    .then(() => {
+                        M.toast({html: 'Logged out successfully', classes: 'green'});
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 1000);
+                    })
+                    .catch(() => {
+                        // Even if server logout fails, redirect to login
+                        window.location.href = '/login';
+                    });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

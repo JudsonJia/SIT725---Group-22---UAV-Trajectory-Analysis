@@ -1,75 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - UAV Analysis Platform</title>
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - UAV Analysis Platform</title>
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .admin-section {
+      margin-top: 30px;
+    }
+    .admin-badge {
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+    .demo-info {
+      background-color: #fff3e0;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .demo-info small {
+      color: #e65100;
+    }
+  </style>
 </head>
 <body class="blue-grey lighten-5">
 <div class="container">
-    <div class="row">
-        <div class="col s12 m6 offset-m3">
-            <div class="card" style="margin-top: 50px; border-radius: 8px;">
-                <div class="card-content">
-                        <span class="card-title center-align">
-                            <i class="material-icons large teal-text" style="font-size: 3rem;">flight_takeoff</i>
-                            <h4 style="margin-top: 0;">UAV Analysis Platform</h4>
-                        </span>
+  <div class="row">
+    <!-- User Login Section -->
+    <div class="col s12 m6 offset-m3">
+      <div class="card" style="margin-top: 50px; border-radius: 8px;">
+        <div class="card-content">
+                    <span class="card-title center-align">
+                        <i class="material-icons large teal-text" style="font-size: 3rem;">flight_takeoff</i>
+                        <h4 style="margin-top: 0;">UAV Analysis Platform</h4>
+                    </span>
 
-                    <form id="login-form">
-                        <div class="row">
-                            <div class="input-field col s12">
-                                <i class="material-icons prefix">email</i>
-                                <input id="email" type="email" class="validate" required>
-                                <label for="email">Email</label>
-                                <span class="helper-text" data-error="Please enter a valid email"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="input-field col s12">
-                                <i class="material-icons prefix">lock</i>
-                                <input id="password" type="password" class="validate" required minlength="6">
-                                <label for="password">Password</label>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col s12">
-                                <label>
-                                    <input type="checkbox" id="remember-me" class="filled-in" />
-                                    <span>Remember me</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col s12">
-                                <button class="btn waves-effect waves-light teal btn-large" type="submit" style="width: 100%;">
-                                    Login
-                                    <i class="material-icons right">send</i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <div class="row">
-                        <div class="col s12 center-align">
-                            <p style="margin: 20px 0;">Don't have an account? <a href="/register" class="teal-text">Register here</a></p>
-                            <div class="divider"></div>
-<!--                            <a href="/api/auth/google" class="btn red waves-effect waves-light" style="margin-top: 20px;">-->
-<!--                                <i class="material-icons left">account_circle</i>-->
-<!--                                Login with Google-->
-<!--                            </a>-->
-                        </div>
-                    </div>
-                </div>
+          <form id="login-form">
+            <div class="row">
+              <div class="input-field col s12">
+                <i class="material-icons prefix">email</i>
+                <input id="email" type="email" class="validate" required>
+                <label for="email">Email</label>
+                <span class="helper-text" data-error="Please enter a valid email"></span>
+              </div>
             </div>
+
+            <div class="row">
+              <div class="input-field col s12">
+                <i class="material-icons prefix">lock</i>
+                <input id="password" type="password" class="validate" required minlength="6">
+                <label for="password">Password</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col s12">
+                <label>
+                  <input type="checkbox" id="remember-me" class="filled-in" />
+                  <span>Remember me</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col s12">
+                <button class="btn waves-effect waves-light teal btn-large" type="submit" style="width: 100%;">
+                  Login to Dashboard
+                  <i class="material-icons right">send</i>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="row">
+            <div class="col s12 center-align">
+              <p style="margin: 20px 0;">Don't have an account? <a href="/register" class="teal-text">Register here</a></p>
+              <div class="divider"></div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Admin Login Section -->
+  <div class="row admin-section">
+    <div class="col s12 m6 offset-m3">
+      <div class="card" style="border-radius: 8px;">
+        <div class="card-content">
+                    <span class="card-title">
+                        <i class="material-icons left">security</i>
+                        Admin Login <span class="admin-badge">Admin Panel</span>
+                    </span>
+
+          <!-- Demo credentials info -->
+          <div class="demo-info">
+            <small><strong>Admin Credentials:</strong> admin@uav.com / admin123</small>
+          </div>
+
+          <form id="admin-login-form">
+            <div class="row">
+              <div class="input-field col s12">
+                <i class="material-icons prefix">alternate_email</i>
+                <input id="admin-email" type="email" class="validate" required value="admin@uav.com">
+                <label for="admin-email" class="active">Admin Email</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="input-field col s12">
+                <i class="material-icons prefix">vpn_key</i>
+                <input id="admin-password" type="password" class="validate" required value="admin123">
+                <label for="admin-password" class="active">Admin Password</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col s12">
+                <button class="btn waves-effect waves-light green btn-large" type="submit" style="width: 100%;">
+                  Login to Admin Panel
+                  <i class="material-icons right">lock_open</i>
+                </button>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col s12 right-align">
+                <a href="/admin-unprotected" class="grey-text text-darken-1" style="font-size: 12px;"
+                   title="Opens admin UI without auth (for development/testing)">Development Access</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Scripts -->
@@ -77,29 +148,126 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script src="/js/auth.js"></script>
 <script>
-    $(document).ready(function() {
-        const auth = new AuthManager();
+  $(document).ready(function() {
+    // Initialize Materialize components
+    M.AutoInit();
 
-        $('#login-form').on('submit', async function(e) {
-            e.preventDefault();
+    // Original user login (keep your existing AuthManager logic)
+    const auth = new AuthManager();
+    $('#login-form').on('submit', async function(e) {
+      e.preventDefault();
 
-            const email = $('#email').val();
-            const password = $('#password').val();
-            const rememberMe = $('#remember-me').is(':checked');
+      const email = $('#email').val();
+      const password = $('#password').val();
+      const rememberMe = $('#remember-me').is(':checked');
 
-            try {
-                const user = await auth.login(email, password, rememberMe);
-                M.toast({ html: 'Login successful!', classes: 'green' });
+      try {
+        const user = await auth.login(email, password, rememberMe);
+        M.toast({ html: 'Login successful!', classes: 'green' });
 
-                // 登录成功后跳转 dashboard
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 800);
-            } catch (err) {
-                M.toast({ html: err.message || 'Login failed', classes: 'red' });
-            }
-        });
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 800);
+      } catch (err) {
+        M.toast({ html: err.message || 'Login failed', classes: 'red' });
+      }
     });
+
+    // Admin login handler
+    $('#admin-login-form').on('submit', async function(e) {
+      e.preventDefault();
+
+      const email = $('#admin-email').val().trim();
+      const password = $('#admin-password').val();
+
+      // Validate inputs
+      if (!email || !password) {
+        M.toast({html: 'Please fill in all fields', classes: 'red'});
+        return;
+      }
+
+      try {
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.html('<i class="material-icons left">hourglass_empty</i>Logging in...').prop('disabled', true);
+
+        // Call admin login API
+        const response = await fetch('/api/auth/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Admin login failed');
+        }
+
+        // Store admin token
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('uav_token', data.token); // For API consistency
+
+        M.toast({html: 'Admin login successful! Redirecting...', classes: 'green'});
+
+        // Redirect to admin panel
+        setTimeout(() => {
+          window.location.href = '/admin';
+        }, 1000);
+
+      } catch (error) {
+        console.error('Admin login error:', error);
+        M.toast({html: error.message || 'Admin login failed', classes: 'red'});
+      } finally {
+        // Restore button state
+        const submitBtn = $('#admin-login-form').find('button[type="submit"]');
+        const originalText = 'Login to Admin Panel <i class="material-icons right">lock_open</i>';
+        submitBtn.html(originalText).prop('disabled', false);
+      }
+    });
+
+    // Check if already authenticated
+    checkExistingAuth();
+  });
+
+  // Check existing authentication
+  async function checkExistingAuth() {
+    const userToken = localStorage.getItem('uav_token');
+    const adminToken = localStorage.getItem('adminToken');
+    const token = adminToken || userToken;
+
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/auth/profile', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          const isAdmin = data.user.role === 'admin';
+          const redirectUrl = isAdmin ? '/admin' : '/dashboard';
+          const panelType = isAdmin ? 'admin panel' : 'dashboard';
+
+          M.toast({
+            html: `Already logged in. Redirecting to ${panelType}...`,
+            classes: 'blue'
+          });
+
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 1500);
+        }
+      }
+    } catch (error) {
+      // Token invalid, clear it
+      localStorage.removeItem('uav_token');
+      localStorage.removeItem('adminToken');
+    }
+  }
 </script>
 </body>
 </html>

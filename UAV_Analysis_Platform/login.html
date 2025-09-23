@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Login • UAV Admin</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen grid place-items-center bg-gray-50">
+  <form method="POST" action="/login" class="w-full max-w-sm bg-white rounded-2xl shadow p-6 border">
+    <h1 class="text-xl font-semibold mb-4 text-gray-800">Sign in</h1>
+    <label class="block text-sm mb-2">Username</label>
+    <input name="username" class="w-full border rounded-xl px-3 py-2 mb-4" required />
+    <label class="block text-sm mb-2">Password</label>
+    <input name="password" type="password" class="w-full border rounded-xl px-3 py-2 mb-6" required />
+    <button class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2">Login</button>
+    <p class="text-xs text-gray-500 mt-3">Try: <b>admin</b> / <b>admin123</b></p>
+  </form>
+</body>
+</html>

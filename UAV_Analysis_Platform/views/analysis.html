@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         body { margin-top: 20px; }
+        .actions button { margin-left: 5px; }
+        .report-checkbox { margin-right: 10px; vertical-align: middle; }
     </style>
 </head>
 <body class="container">
@@ -26,6 +28,12 @@
 <!-- History reports -->
 <div id="history" class="section" style="margin-top:20px;">
     <h5>History Reports</h5>
+
+    <!-- Export PDF button -->
+    <button id="exportPdfBtn" class="btn blue waves-effect waves-light" style="margin-bottom: 10px;">
+        <i class="material-icons left">picture_as_pdf</i>Export Selected PDF
+    </button>
+
     <ul id="report-list" class="collection"></ul>
 </div>
 
@@ -42,6 +50,7 @@
     const statusDiv = document.getElementById('status');
     const reportList = document.getElementById('report-list');
     const startBtn = document.getElementById('startBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
 
     const socket = io();
 
@@ -68,12 +77,10 @@
             statusDiv.textContent = "❌ Missing userId in token. Please re-login.";
             startBtn.style.display = "none";
         } else if (flightId && flightId !== "null") {
-            // With flightId → can start analysis
             statusDiv.className = "card-panel teal lighten-4";
             statusDiv.textContent = "✅ Ready. Click start analysis in UI (socket).";
             startBtn.style.display = "inline-block";
         } else {
-            // Without flightId → show all reports
             statusDiv.className = "card-panel blue lighten-4";
             statusDiv.textContent = "📚 Showing all analysis reports.";
             startBtn.style.display = "none";
@@ -102,7 +109,7 @@
         }
     }
 
-    // Load all reports with corrected display format
+    // Load all reports
     function loadReports() {
         fetch(`/api/analysis/reports`, { headers: { Authorization: "Bearer " + token } })
             .then(res => res.json())
@@ -113,20 +120,21 @@
                         const li = document.createElement("li");
                         li.className = "collection-item";
 
-                        // Format the display properly
                         const avgSpeed = (r.avgSpeed || 0).toFixed(2);
                         const maxSpeed = (r.maxSpeed || 0).toFixed(2);
                         const duration = r.duration || 0;
                         const errorDisplay = r.errorRate ? `${r.errorRate.toFixed(1)}cm` : 'N/A';
 
                         li.innerHTML = `
-                            <div class="content">
-                                <i class="material-icons left">description</i>
-                                <span><strong>${r.flightName || "Unnamed Flight"}</strong></span>
-                                <div class="report-details">
-                                    Speed: ${avgSpeed}m/s (avg) | ${maxSpeed}m/s (max)<br>
-                                    Duration: ${duration}s | Accuracy: ${errorDisplay}
-                                </div>
+                            <label>
+                                <input type="checkbox" class="report-checkbox" value="${r._id}" />
+                                <span></span>
+                            </label>
+                            <i class="material-icons left">description</i>
+                            <span><strong>${r.flightName || "Unnamed Flight"}</strong></span>
+                            <div class="report-details">
+                                Speed: ${avgSpeed}m/s (avg) | ${maxSpeed}m/s (max)<br>
+                                Duration: ${duration}s | Accuracy: ${errorDisplay}
                             </div>
                             <div class="actions">
                                 <button class="btn-small red" onclick="deleteReport('${r._id}')">
@@ -146,7 +154,7 @@
             });
     }
 
-    // Start analysis via socket (only when flightId exists)
+    // Start analysis via socket
     startBtn.addEventListener('click', () => {
         if (!flightId || !userId) return;
         statusDiv.className = "card-panel orange lighten-4";
@@ -167,6 +175,40 @@
                 statusDiv.className = "card-panel red lighten-4";
                 statusDiv.textContent = "❌ " + result.message;
             }
+        });
+    });
+
+    // Export selected reports as PDF
+    exportPdfBtn.addEventListener('click', () => {
+        const selectedIds = Array.from(document.querySelectorAll('.report-checkbox:checked')).map(cb => cb.value);
+        if (!selectedIds.length) {
+            M.toast({ html: 'Please select at least one report', classes: 'red' });
+            return;
+        }
+
+        fetch('/api/analysis/reports/pdf', {
+            method: 'POST',
+            headers: { 
+                'Authorization': "Bearer " + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reportIds: selectedIds })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Selected_Flight_History.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            M.toast({ html: 'PDF downloaded', classes: 'green' });
+        })
+        .catch(err => {
+            console.error(err);
+            M.toast({ html: 'Download PDF failed', classes: 'red' });
         });
     });
 </script>

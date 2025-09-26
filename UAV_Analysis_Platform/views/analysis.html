@@ -155,27 +155,61 @@
     }
 
     // Start analysis via socket
-    startBtn.addEventListener('click', () => {
-        if (!flightId || !userId) return;
-        statusDiv.className = "card-panel orange lighten-4";
-        statusDiv.textContent = "🚀 Analysis started...";
-        socket.emit('startAnalysis', { flightId, userId });
+    exportPdfBtn.addEventListener('click', async () => {
+        const selectedIds = Array.from(document.querySelectorAll('.report-checkbox:checked')).map(cb => cb.value);
+        if (!selectedIds.length) {
+            M.toast({ html: 'Please select at least one report', classes: 'red' });
+            return;
+        }
 
-        socket.on('analysisProgress', data => {
-            statusDiv.className = "card-panel blue lighten-4";
-            statusDiv.textContent = `⏳ ${data.message}`;
-        });
+        try {
 
-        socket.on('analysisComplete', result => {
-            if (result.success) {
-                statusDiv.className = "card-panel green lighten-4";
-                statusDiv.textContent = "✅ Analysis Complete!";
-                loadReports(); // Refresh reports
-            } else {
-                statusDiv.className = "card-panel red lighten-4";
-                statusDiv.textContent = "❌ " + result.message;
+            exportPdfBtn.disabled = true;
+            exportPdfBtn.innerHTML = '<i class="material-icons left">hourglass_empty</i>Generating PDF...';
+
+            const response = await fetch('/api/analysis/reports/pdf', {
+                method: 'POST',
+                headers: {
+                    'Authorization': "Bearer " + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reportIds: selectedIds })
+            });
+
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        });
+
+            const blob = await response.blob();
+            console.log('Downloaded blob size:', blob.size, 'bytes');
+            console.log('Blob type:', blob.type);
+
+            if (blob.size === 0) {
+                throw new Error('Downloaded file is empty');
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Flight_Reports_${new Date().toISOString().slice(0,10)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+            M.toast({ html: `PDF downloaded (${blob.size} bytes)`, classes: 'green' });
+
+        } catch (err) {
+            console.error('PDF download error:', err);
+            M.toast({ html: 'Download PDF failed: ' + err.message, classes: 'red' });
+        } finally {
+            // 恢复按钮状态
+            exportPdfBtn.disabled = false;
+            exportPdfBtn.innerHTML = '<i class="material-icons left">picture_as_pdf</i>Export Selected PDF';
+        }
     });
 
     // Export selected reports as PDF

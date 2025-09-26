@@ -41,4 +41,6 @@ router.delete('/reports/:reportId', AnalysisController.deleteReport);
  */
 router.get('/reports/pdf', AnalysisController.exportSelectedReportsPdf);
 
+router.post('/reports/pdf', AnalysisController.exportSelectedReportsPdf);
+
 module.exports = router;

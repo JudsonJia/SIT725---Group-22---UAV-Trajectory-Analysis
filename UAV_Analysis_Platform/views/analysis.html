@@ -154,6 +154,42 @@
             });
     }
 
+
+    startBtn.addEventListener('click', () => {
+        if (!userId || !flightId) {
+            M.toast({ html: 'Missing userId or flightId', classes: 'red' });
+            return;
+        }
+
+        statusDiv.className = "card-panel orange lighten-4";
+        statusDiv.textContent = "🔄 Analysis starting...";
+        startBtn.disabled = true;
+
+
+        socket.emit('startAnalysis', { flightId, userId });
+    });
+
+
+    socket.on('analysisProgress', (data) => {
+        statusDiv.className = "card-panel blue lighten-4";
+        statusDiv.textContent = data.message;
+    });
+
+
+    socket.on('analysisComplete', (data) => {
+        startBtn.disabled = false;
+        if (data.success) {
+            statusDiv.className = "card-panel green lighten-4";
+            statusDiv.textContent = "✅ Analysis complete!";
+            M.toast({ html: 'Analysis completed successfully', classes: 'green' });
+            loadReports();
+        } else {
+            statusDiv.className = "card-panel red lighten-4";
+            statusDiv.textContent = `❌ Error: ${data.message}`;
+            M.toast({ html: 'Analysis failed: ' + data.message, classes: 'red' });
+        }
+    });
+
     // Start analysis via socket
     exportPdfBtn.addEventListener('click', async () => {
         const selectedIds = Array.from(document.querySelectorAll('.report-checkbox:checked')).map(cb => cb.value);
@@ -210,40 +246,6 @@
             exportPdfBtn.disabled = false;
             exportPdfBtn.innerHTML = '<i class="material-icons left">picture_as_pdf</i>Export Selected PDF';
         }
-    });
-
-    // Export selected reports as PDF
-    exportPdfBtn.addEventListener('click', () => {
-        const selectedIds = Array.from(document.querySelectorAll('.report-checkbox:checked')).map(cb => cb.value);
-        if (!selectedIds.length) {
-            M.toast({ html: 'Please select at least one report', classes: 'red' });
-            return;
-        }
-
-        fetch('/api/analysis/reports/pdf', {
-            method: 'POST',
-            headers: { 
-                'Authorization': "Bearer " + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ reportIds: selectedIds })
-        })
-        .then(res => res.blob())
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'Selected_Flight_History.pdf';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-            M.toast({ html: 'PDF downloaded', classes: 'green' });
-        })
-        .catch(err => {
-            console.error(err);
-            M.toast({ html: 'Download PDF failed', classes: 'red' });
-        });
     });
 </script>
 </body>
